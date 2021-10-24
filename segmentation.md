@@ -94,7 +94,9 @@ VA1: 9 -> 117 (No puedo) 9 + 88 = 97 != 117
 ```
 
 </br>
+
 Ambas direcciones virtuales caen en segmento 0, tendría que encontrar una base tal que `31 + base = 119` y `9 + base = 117`
+
 </br>
 
 ![](./segmod.png)
