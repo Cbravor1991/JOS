@@ -275,10 +275,14 @@ page_init(void)
 	size_t i;
 	for (i = 0; i < npages; i++) {
 		if (i == 0) {
-			continue; // 1)
+			pages[i].pp_ref = 1;
+            pages[i].pp_link = NULL;
+			continue;
 		}
 		if (page2pa(&pages[i]) >= IOPHYSMEM && page2pa(&pages[i]) <= PADDR(free_page)) {
-			continue; // 3)
+			pages[i].pp_ref = 1;
+            pages[i].pp_link = NULL;
+			continue;
 		}
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
@@ -371,7 +375,7 @@ pte_t *
 pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
 	// Fill this function in
-	
+
 	return NULL;
 }
 
