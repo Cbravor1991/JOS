@@ -447,12 +447,10 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
-	// Para resolver esta funcion voy a usar page2pa: direccion de la page a fisica
-	// PTE_P : Me dice que si la page table entry esta presente
-	// PTE_ADDR: page table adress
-	// page remove
-	// tlb_invalidate : Vacía la entrada solo si estamos->
-	// modificando el espacio de direcciones actual
+	// Para resolver esta funcion voy a usar page2pa: direccion de la page a
+	// fisica PTE_P : Me dice que si la page table entry esta presente PTE_ADDR:
+	// page table adress page remove tlb_invalidate : Vacía la entrada solo
+	// si estamos-> modificando el espacio de direcciones actual
 
 	// Fill this function in
 	pte_t *pt_e = pgdir_walk(pgdir, va, true);
