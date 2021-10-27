@@ -447,16 +447,50 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
+	// Para resolver esta funcion voy a usar page2pa: direccion de la page a fisica
+	// PTE_P : Me dice que si la page table entry esta presente
+	// PTE_ADDR: page table adress
+	// page remove
+	// tlb_invalidate : Vacía la entrada solo si estamos->
+	// modificando el espacio de direcciones actual
+
 	// Fill this function in
 	pte_t *pt_e = pgdir_walk(pgdir, va, true);
-	if (!pp)
+	if (pt_e == NULL) {
 		return -E_NO_MEM;
-	if (*pt_e & PTE_P) {
-		page_remove(pgdir, va);
 	}
-	// pp->pp_ref++;
-	//*pt_e = page2pa(pp) | perm |PTE_P;
+
+	physaddr_t page_ad = page2pa(pp);
+
+	if (*pt_e & PTE_P) {
+		// si esto es verdadero se realiza
+		// un cambio de permiso
+		// en el page entry
+		if (PTE_ADDR(*pt_e) == page_ad) {
+			*pt_e = page_ad | perm | PTE_P;
+
+		} else {
+			page_remove(pgdir, va);
+		}
+	}
+
+	pp->pp_ref++;
+	tlb_invalidate(pgdir, va);
 	return 0;
+
+
+	/*pte_t *pt_e = pgdir_walk(pgdir, va, true);
+
+
+	if (!pp)
+	        return -E_NO_MEM;
+	if (*pt_e & PTE_P) {
+	        page_remove(pgdir, va);
+	}
+	 pp->pp_ref++;
+	tlb_invalidate(pgdir, va);
+	*pt_e = page2pa(pp) | perm |PTE_P;
+	return 0; */
 }
 
 //
