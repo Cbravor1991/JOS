@@ -464,7 +464,9 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 		// si esto es verdadero se realiza
 		// un cambio de permiso
 		// en el page entry
-		if (PTE_ADDR(*pt_e) == page_ad) {
+		if (PTE_ADDR(*pt_e) ==
+		    page_ad) {  // si la direccion de la memoria fisca es igual e
+			// a la direccion de la pagina que recibo
 			*pt_e = page_ad | perm | PTE_P;
 
 		} else {
@@ -473,7 +475,9 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 	}
 
 	pp->pp_ref++;
-	tlb_invalidate(pgdir, va);
+	tlb_invalidate(pgdir,
+	               va);  // estamos modificando el estado de la memoria con los flgas ejecutamos
+	*pt_e = page_ad | perm | PTE_P;
 	return 0;
 
 
