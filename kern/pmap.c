@@ -192,7 +192,7 @@ mem_init(void)
 	//      (ie. perm = PTE_U | PTE_P)
 	//    - pages itself -- kernel RW, user NONE
 	// Your code goes here:
-	physaddr_t pgs = PADDR(pages);	
+	physaddr_t pgs = PADDR(pages);
 	boot_map_region(kern_pgdir, UPAGES, size_of_pages, pgs, PTE_U | PTE_P);
 	//////////////////////////////////////////////////////////////////////
 	// Use the physical memory that 'bootstack' refers to as the kernel
@@ -205,7 +205,7 @@ mem_init(void)
 	//       overwrite memory.  Known as a "guard page".
 	//     Permissions: kernel RW, user NONE
 	// Your code goes here:
-	int kernel_stack = KSTACKTOP-KSTKSIZE; //ver memlay.h
+	int kernel_stack = KSTACKTOP - KSTKSIZE;  // ver memlay.h
 	physaddr_t bootsack_pa = PADDR(bootstack);
 	boot_map_region(kern_pgdir, kernel_stack, KSTKSIZE, bootsack_pa, PTE_W);
 	//////////////////////////////////////////////////////////////////////
@@ -219,11 +219,10 @@ mem_init(void)
 	long numero = 2;
 	long potencia = 32;
 	long resultado = numero;
-    while (potencia > 1)
-    {
-        resultado = resultado * numero;
-        potencia--;
-    }
+	while (potencia > 1) {
+		resultado = resultado * numero;
+		potencia--;
+	}
 	boot_map_region(kern_pgdir, KERNBASE, (resultado - KERNBASE), 0, PTE_W);
 	// Check that the initial page directory has been set up correctly.
 	check_kern_pgdir();
@@ -395,7 +394,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 		page_table = KADDR(PTE_ADDR(dir_entry));
 		return &page_table[PTX(va)];
 	} else {
-		//cprintf("no hay pag: %p\n", dir_entry);
+		// cprintf("no hay pag: %p\n", dir_entry);
 		if (create) {
 			struct PageInfo *page = page_alloc(ALLOC_ZERO);
 			if (page != NULL) {
@@ -428,20 +427,19 @@ static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
 	// Fill this function in
-	int number_of_pages = size/PGSIZE;
+	int number_of_pages = size / PGSIZE;
 	for (int i = 0; i < number_of_pages; i++) {
-		//obtengo puntero
-		pte_t *pte =pgdir_walk(pgdir, (void *) va, true);
-		if(!pte) panic(" !pte");
-		//actualiza
+		// obtengo puntero
+		pte_t *pte = pgdir_walk(pgdir, (void *) va, true);
+		if (!pte)
+			panic(" !pte");
+		// actualiza
 		*pte = pa | perm | PTE_P;
-		//avanzo en virtual
+		// avanzo en virtual
 		va = va + PGSIZE;
-		//avanzo en fisica
+		// avanzo en fisica
 		pa = pa + PGSIZE;
 	}
-
-
 }
 
 //
