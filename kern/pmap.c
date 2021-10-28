@@ -428,7 +428,6 @@ static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
 	// Fill this function in
-<<<<<<< HEAD
 	int number_of_pages = size/PGSIZE;
 	for (int i = 0; i < number_of_pages; i++) {
 		//obtengo puntero
@@ -443,8 +442,6 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 	}
 
 
-=======
->>>>>>> fc9a79f46e997d76f20c962ad220d3845a7a78ab
 }
 
 //
