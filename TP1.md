@@ -3,8 +3,23 @@ TP1: Memoria virtual en JOS
 
 boot_alloc_pos
 --------------
+1. Un cálculo manual de la primera dirección de memoria que devolverá boot_alloc() tras el arranque. Se puede calcular a partir del binario compilado (obj/kern/kernel), usando los comandos readelf y/o nm y operaciones matemáticas.
 
-...
+Al correr `boot_alloc()` inicialmente voy a obtener *nextfree*
+Ejecutando `nm -n kernel`, se obtienen los simbolos ordenados segun como aparecen en memoria.
+
+![](./kern_end.png)
+
+El símbolo end aparece en la posición `0xf0117950`, en base a ese valor se podrá calcular *nextfree* (donde termina el kernel).
+Al hacer `boot_alloc()` se obtendrá la siguiente libre, pasandole la dirección `0xf0117950`. Previamente se lo redondea al múltiplo de 4096 (tamaño de página) más cercano obteniendo `0xf0118000`. Sumo una página (para obtener la siguiente libre) llegando a la direccion: `0xf0118000 + 0x1000 = 0xf0119000`
+
+Corrida con finish, mostrando el resultado final obtenido coincide con el manual
+![](./nextfree_boot.png)
+
+Corrida con Watch, mostrando que pasa de `0xf0118000` a `0xf0119000`
+![](./nextfree_watch.png)
+
+
 
 
 page_alloc
