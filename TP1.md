@@ -8,8 +8,16 @@ boot_alloc_pos
 Al correr *boot_alloc()* inicialmente voy a obtener *nextfree*
 Ejecutando nm -n kernel, se obtienen los simbolos ordenados segun como aparecen en memoria.
 
-El símbolo end aparece en la posición 0xf0115950, que es donde estará nextfree.
-Al hacer boot_alloc() se obtendrá la siguiente. Previamente se lo redondea al múltiplo de 4096 (tamaño de página) más cercano obteniendo 0xf0116000. Sumo una página entonces llegando a la direccion: 0xf0116000 + 0x1000 = 0xf0117000
+![](./kern_end.png)
+
+El símbolo end aparece en la posición 0xf0117950, que es donde estará nextfree.
+Al hacer boot_alloc() se obtendrá la siguiente. Previamente se lo redondea al múltiplo de 4096 (tamaño de página) más cercano obteniendo 0xf0118000. Sumo una página entonces llegando a la direccion: 0xf0118000 + 0x1000 = 0xf0119000
+
+Corrida con finish, mostrando el resultado final obtenido coincide con el manual
+![](./nextfree_boot.png)
+
+Corrida con Watch, mostrando que pasa de 0xf0118000 a 0xf0119000
+![](./nextfree_watch.png)
 
 
 ...
