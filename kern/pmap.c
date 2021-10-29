@@ -426,7 +426,9 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
-	// Fill this function in
+// Fill this function in
+#ifndef TP1_PSE
+	// Código original
 	int number_of_pages = size / PGSIZE;
 	for (int i = 0; i < number_of_pages; i++) {
 		// obtengo puntero
@@ -440,6 +442,26 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 		// avanzo en fisica
 		pa = pa + PGSIZE;
 	}
+#else
+	// Nueva implementación en caso de large page
+	if (va % PTSIZE == 0 && size % PTSIZE == 0 && pa % PTSIZE == 0) {
+		for (size_t i = 0; i < size / PTSIZE;
+		     i++, va += PTSIZE, pa += PTSIZE) {
+			// Obtengo la PDE
+			pde_t *pte = pgdir + PDX(va);
+			// seteo los flags
+			*pte = pa | perm | PTE_PS | PTE_P;
+		}
+	} else {
+		// si no es una large page es una short page
+		for (size_t i = 0; i < size / PGSIZE;
+		     i++, va += PGSIZE, pa += PGSIZE) {
+			pte_t *pte = pgdir_walk(pgdir, (const void *) va, 1);
+			*pte |= pa | perm | PTE_P;
+		}
+	}
+
+#endif
 }
 
 //
