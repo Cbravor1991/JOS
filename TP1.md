@@ -34,8 +34,13 @@ map_region_large
 
 1. ¿cuánta memoria se ahorró de este modo? (en KiB)  </br> </br>
 
+Cada Page Table Entry ocupa 4 kb, al igual que las page directory entrys. Al pasar de página chica a *large*, ya no es necesaria la *page table entry*. Por lo que se podría decir que lo que se ahorra por página es 4 KB o 3.90625 Kib.
  </br> </br>
+ 
+ 
 2. ¿es una cantidad fija, o depende de la memoria física de la computadora? </br> </br>
+
+La cantidad será fija, ya que sin importar la memoria física de la computadora, el PGSIZE no varía, es 4KB. Además esta modificación solo afecta la forma en que se traducen las direcciones de virtual a física.
 
  
 
