@@ -106,9 +106,9 @@ Ambas direcciones virtuales caen en segmento 0, tendría que encontrar una base 
 ### Tarea: límites de segmentación
 
 1. El tamaño del espacio de direcciones virtuales será $2^5$ y el de físicas $2^7$
-2.  **TODO**
-3. En el caso de virtual a física es posible, ya que la relación es de 1 a 1. **falta caso**
-4. En este caso, al ser 128 direcciones físicas y sólo 32 virtuales, esto no va a ser posible
+2. Es posible, esto va a ocurrir si los segmentos a los que mapean en memoria física se encuentran solapados.
+4. En el caso de virtual a física es posible, ya que la relación es de 1 a 1. **falta caso**
+5. En este caso, al ser 128 direcciones físicas y sólo 32 virtuales, esto no va a ser posible
 
 
 
