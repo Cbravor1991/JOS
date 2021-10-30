@@ -103,7 +103,12 @@ Ambas direcciones virtuales caen en segmento 0, tendría que encontrar una base 
 
 
 
+### Tarea: límites de segmentación
 
+1. El tamaño del espacio de direcciones virtuales será $2^5$ y el de físicas $2^7$
+2.
+3.
+4.
 
 
 
