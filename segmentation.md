@@ -105,7 +105,7 @@ Ambas direcciones virtuales caen en segmento 0, tendría que encontrar una base 
 
 ### Tarea: límites de segmentación
 
-1. El tamaño del espacio de direcciones virtuales será $2^5$ y el de físicas $2^7$
+1. El tamaño del espacio de direcciones virtuales será `2^5 = 32` y el de físicas `2^7 = 128`
 2. Es posible, esto va a ocurrir si los segmentos a los que mapean en memoria física se encuentran solapados. El programa segmentation.py no permite hacerlo.
 3. En el caso de virtual a física es posible, ya que la relación es de 1 a 1. </br>
 
