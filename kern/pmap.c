@@ -388,21 +388,23 @@ pte_t *
 pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
 	// Fill this function in
-	pde_t dir_entry = pgdir[PDX(va)];
+	size_t pdx = PDX(va);
+	size_t ptx = PTX(va);
+	pde_t dir_entry = pgdir[pdx];
 	pte_t *page_table;
 	if (dir_entry & PTE_P) {
 		page_table = KADDR(PTE_ADDR(dir_entry));
-		return &page_table[PTX(va)];
+
+		return &page_table[ptx];
 	} else {
-		// cprintf("no hay pag: %p\n", dir_entry);
 		if (create) {
 			struct PageInfo *page = page_alloc(ALLOC_ZERO);
 			if (page != NULL) {
 				page->pp_ref++;
 				pgdir[PDX(va)] =
 				        page2pa(page) | PTE_U | PTE_W | PTE_P;
-				page_table = KADDR(PTE_ADDR(pgdir[PDX(va)]));
-				return &page_table[PTX(va)];
+				page_table = KADDR(PTE_ADDR(pgdir[pdx]));
+				return &page_table[ptx];
 			}
 		} else {
 			return NULL;
