@@ -448,7 +448,7 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 	// Nueva implementación en caso de large page
 	if (va % PTSIZE == 0 && size % PTSIZE == 0 && pa % PTSIZE == 0) {
 		for (size_t i = 0; i < size / PTSIZE;
-		     i++, va += PTSIZE, pa += PTSIZE) {
+		     i++, va = va + PTSIZE, pa = pa + PTSIZE) {
 			// Obtengo la PDE
 			pde_t *pte = pgdir + PDX(va);
 			// seteo los flags
@@ -456,13 +456,20 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 		}
 	} else {
 		// si no es una large page es una short page
-		for (size_t i = 0; i < size / PGSIZE;
-		     i++, va += PGSIZE, pa += PGSIZE) {
-			pte_t *pte = pgdir_walk(pgdir, (const void *) va, 1);
-			*pte |= pa | perm | PTE_P;
+		int number_of_pages = size / PGSIZE;
+		for (int i = 0; i < number_of_pages; i++) {
+			// obtengo puntero
+			pte_t *pte = pgdir_walk(pgdir, (void *) va, true);
+			if (!pte)
+				panic(" !pte");
+			// actualiza
+			*pte = pa | perm | PTE_P;
+			// avanzo en virtual
+			va = va + PGSIZE;
+			// avanzo en fisica
+			pa = pa + PGSIZE;
 		}
 	}
-
 #endif
 }
 
