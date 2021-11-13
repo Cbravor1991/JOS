@@ -195,6 +195,18 @@ env_setup_vm(struct Env *e)
 
 	// LAB 3: Your code here.
 
+	// p es la pagina allocada
+	// e->env_pgdir es la direccion virtual del kernel de page dir, es lo obtengo con la funcion page2kva
+	// The functions in kern/pmap.h are handy -> page2kva recibe física y devuelve virtual del kerenel
+	// page alloc ya devuelve struct PageInfo* entonces la funcion tiene que ser page2kva aplicado a 
+	// la pagina allocada p. Ahora la pagina del directirio para el env es la allocada más arriva.
+	
+	e->env_pgdir = page2kva(p);
+
+	p->pp_ref = p->pp_ref + 1; // necesario en este caso segun consigna
+	memcpy(e->env_pgdir, kern_pgdir, PGSIZE); //se puede usar kernpgdir como template
+
+
 	// UVPT maps the env's own page table read-only.
 	// Permissions: kernel R, user R
 	e->env_pgdir[PDX(UVPT)] = PADDR(e->env_pgdir) | PTE_P | PTE_U;
