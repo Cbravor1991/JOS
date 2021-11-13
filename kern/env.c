@@ -116,16 +116,16 @@ env_init(void)
 
 
 	//  static struct Env *env_free_list;  Free environment list
-                                   // (linked by Env->env_link)
+	// (linked by Env->env_link)
 
 
-	
 	for (int i = 0; i < NENV; i++) {
-		envs[i].env_id = 0; // set their env_ids to 0
-		envs[i].env_link = &envs[i + 1]; // cada uno apunta al siguiente (salvo el ultimo)
+		envs[i].env_id = 0;  // set their env_ids to 0
+		envs[i].env_link =
+		        &envs[i + 1];  // cada uno apunta al siguiente (salvo el ultimo)
 		envs[i].env_status = 0;
 		if (i == NENV - 1) {
-			envs[i].env_link = NULL; // correccion del ultimo
+			envs[i].env_link = NULL;  // correccion del ultimo
 		}
 	}
 
@@ -196,15 +196,19 @@ env_setup_vm(struct Env *e)
 	// LAB 3: Your code here.
 
 	// p es la pagina allocada
-	// e->env_pgdir es la direccion virtual del kernel de page dir, es lo obtengo con la funcion page2kva
-	// The functions in kern/pmap.h are handy -> page2kva recibe física y devuelve virtual del kerenel
-	// page alloc ya devuelve struct PageInfo* entonces la funcion tiene que ser page2kva aplicado a 
-	// la pagina allocada p. Ahora la pagina del directirio para el env es la allocada más arriva.
-	
+	// e->env_pgdir es la direccion virtual del kernel de page dir, es lo
+	// obtengo con la funcion page2kva The functions in kern/pmap.h are
+	// handy -> page2kva recibe física y devuelve virtual del kerenel page
+	// alloc ya devuelve struct PageInfo* entonces la funcion tiene que ser
+	// page2kva aplicado a la pagina allocada p. Ahora la pagina del
+	// directirio para el env es la allocada más arriva.
+
 	e->env_pgdir = page2kva(p);
 
-	p->pp_ref = p->pp_ref + 1; // necesario en este caso segun consigna
-	memcpy(e->env_pgdir, kern_pgdir, PGSIZE); //se puede usar kernpgdir como template
+	p->pp_ref = p->pp_ref + 1;  // necesario en este caso segun consigna
+	memcpy(e->env_pgdir,
+	       kern_pgdir,
+	       PGSIZE);  // se puede usar kernpgdir como template
 
 
 	// UVPT maps the env's own page table read-only.
