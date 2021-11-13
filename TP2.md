@@ -33,11 +33,41 @@ El proceso que se va a lanzar será 4096 más el offset 630, en hexadecimal: `10
 * 4276
 * 5276
 
+
 ...
 
 
 env_init_percpu
 ---------------
+
+A `lgdt` le paso como parámetro `gdt_pd = { sizeof(gdt) - 1, (unsigned long) gdt }`
+
+`sizeof(gdt) = 6 bytes`, se puede ver a continuación el tamaño del struct de acuerdo a las direcciones donde escribe
+
+```
+struct Segdesc gdt[] = {
+	// 0x0 - unused (always faults -- for trapping NULL far pointers)
+	SEG_NULL,
+
+	// 0x8 - kernel code segment
+	[GD_KT >> 3] = SEG(STA_X | STA_R, 0x0, 0xffffffff, 0),
+
+	// 0x10 - kernel data segment
+	[GD_KD >> 3] = SEG(STA_W, 0x0, 0xffffffff, 0),
+
+	// 0x18 - user code segment
+	[GD_UT >> 3] = SEG(STA_X | STA_R, 0x0, 0xffffffff, 3),
+
+	// 0x20 - user data segment
+	[GD_UD >> 3] = SEG(STA_W, 0x0, 0xffffffff, 3),
+
+	// 0x28 - tss, initialized in trap_init_percpu()
+	[GD_TSS0 >> 3] = SEG_NULL
+}
+
+```
+
+Los bytes representan ...TODO
 
 ...
 
