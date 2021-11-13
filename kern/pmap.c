@@ -174,6 +174,11 @@ mem_init(void)
 	//////////////////////////////////////////////////////////////////////
 	// Make 'envs' point to an array of size 'NENV' of 'struct Env'.
 	// LAB 3: Your code here.
+	
+	//boot_alloc es para allocar memoria física while JOS arranca
+	envs = boot_alloc(NENV * sizeof(struct Env)); // alloc del espacio para arreglo de NENVs struct Envs
+	memset(envs, 0, NENV * sizeof(struct Env)); // inicializo en 0, con el tamaño requerido
+
 
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
@@ -207,8 +212,21 @@ mem_init(void)
 	//    - envs itself -- kernel RW, user NONE
 	// LAB 3: Your code here.
 
+	// pde_t *kern_pgdir  Kernel's initial page directory
+	// Read-only copies of the global env structures
+	// 			#define UENVS		(UPAGES - PTSIZE) 
+	// #define PTE_U		0x004	// User
+	// PADDR takes kernel virtual and returns physical -> para mapear envs
+	// PTE_U user permissions
+
+	physaddr_t envs_ph = PADDR(envs);
+	size_t size_of_env_array = NENV * sizeof(struct Env);
+	// envs_ph es envs en phisic address
+	//mapeo  [UENVS, UENVS + size_of_env_array) -> [envs_ph, envs_ph + size_of_env_array)
+	boot_map_region(kern_pgdir, UENVS,  size_of_env_array, envs_ph, PTE_U);
+	
 	//////////////////////////////////////////////////////////////////////
-	// Use the physical memory that 'bootstack' refers to as the kernel
+	// se the physical memory that 'bootstack' refers to as the kernel
 	// stack.  The kernel stack grows down from virtual address KSTACKTOP.
 	// We consider the entire range from [KSTACKTOP-PTSIZE, KSTACKTOP)
 	// to be the kernel stack, but break this into two pieces:
