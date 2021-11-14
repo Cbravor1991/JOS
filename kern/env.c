@@ -291,6 +291,25 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 static void
 region_alloc(struct Env *e, void *va, size_t len)
 {
+	// se nos solicita que redondemos va hacia abajo
+	uintptr_t begin = ROUNDDOWN((uintptr_t) va, PGSIZE);
+	// se nos solicita que redondeamos va+len hacia arriba
+	uintptr_t end = ROUNDUP((uintptr_t) va + len, PGSIZE);
+
+	// necesitamos saber las paginas que vamos a alocar
+
+
+	while (begin < end) {
+		struct PageInfo *page = page_alloc(0);
+		if (!page) {
+			panic("panic: region alloc page null\n");
+		}
+
+
+		page_insert(e->env_pgdir, page, (void *) begin, PTE_W | PTE_U);
+
+		begin += PGSIZE;
+	}
 	// LAB 3: Your code here.
 	// (But only if you need it for load_icode.)
 	//
