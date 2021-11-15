@@ -291,6 +291,13 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 static void
 region_alloc(struct Env *e, void *va, size_t len)
 {
+	// LAB 3: Your code here.
+	// (But only if you need it for load_icode.)
+	//
+	// Hint: It is easier to use region_alloc if the caller can pass
+	//   'va' and 'len' values that are not page-aligned.
+	//   You should round va down, and round (va + len) up.
+	//   (Watch out for corner-cases!)
 	// se nos solicita que redondemos va hacia abajo
 	uintptr_t begin = ROUNDDOWN((uintptr_t) va, PGSIZE);
 	// se nos solicita que redondeamos va+len hacia arriba
@@ -310,13 +317,6 @@ region_alloc(struct Env *e, void *va, size_t len)
 
 		begin += PGSIZE;
 	}
-	// LAB 3: Your code here.
-	// (But only if you need it for load_icode.)
-	//
-	// Hint: It is easier to use region_alloc if the caller can pass
-	//   'va' and 'len' values that are not page-aligned.
-	//   You should round va down, and round (va + len) up.
-	//   (Watch out for corner-cases!)
 }
 
 //
@@ -374,10 +374,47 @@ load_icode(struct Env *e, uint8_t *binary)
 
 	// LAB 3: Your code here.
 
+	// defino un struct del tipo Elf
+	struct Elf *elf = (struct Elf *) binary;
+
+	// envio un panic si encuentro problemas
+	if (elf->e_magic != ELF_MAGIC) {
+		panic("panic: ELF_MAGIC");
+	}
+
+	lcr3(PADDR(e->env_pgdir));
+	struct Proghdr *program_headers_offset =
+	        (struct Proghdr *) ((uint8_t *) elf + elf->e_phoff);
+	struct Proghdr *program_headers_end =
+	        program_headers_offset + elf->e_phnum;
+	for (; program_headers_offset < program_headers_end;
+	     program_headers_offset++) {
+		if (program_headers_offset->p_type != ELF_PROG_LOAD) {
+			continue;
+		}
+		region_alloc(e,
+		             (void *) program_headers_offset->p_va,
+		             program_headers_offset->p_memsz);
+		memcpy((void *) program_headers_offset->p_va,
+		       binary + program_headers_offset->p_offset,
+		       program_headers_offset->p_filesz);
+		memset((void *) (program_headers_offset->p_va +
+		                 program_headers_offset->p_filesz),
+		       0,
+		       program_headers_offset->p_memsz -
+		               program_headers_offset->p_filesz);
+	}
+
 	// Now map one page for the program's initial stack
 	// at virtual address USTACKTOP - PGSIZE.
 
 	// LAB 3: Your code here.
+
+	// Se debe, además, configurar el entry point del proceso.
+	e->env_tf.tf_eip = elf->e_entry;
+	region_alloc(e, (void *) (USTACKTOP - PGSIZE), PGSIZE);
+	// restauramos la pgdir del kern
+	lcr3(PADDR(kern_pgdir));
 }
 
 //
