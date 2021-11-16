@@ -298,6 +298,25 @@ region_alloc(struct Env *e, void *va, size_t len)
 	//   'va' and 'len' values that are not page-aligned.
 	//   You should round va down, and round (va + len) up.
 	//   (Watch out for corner-cases!)
+	// se nos solicita que redondemos va hacia abajo
+	uintptr_t begin = ROUNDDOWN((uintptr_t) va, PGSIZE);
+	// se nos solicita que redondeamos va+len hacia arriba
+	uintptr_t end = ROUNDUP((uintptr_t) va + len, PGSIZE);
+
+	// necesitamos saber las paginas que vamos a alocar
+
+
+	while (begin < end) {
+		struct PageInfo *page = page_alloc(0);
+		if (!page) {
+			panic("panic: region alloc page null\n");
+		}
+
+
+		page_insert(e->env_pgdir, page, (void *) begin, PTE_W | PTE_U);
+
+		begin += PGSIZE;
+	}
 }
 
 //
@@ -355,10 +374,47 @@ load_icode(struct Env *e, uint8_t *binary)
 
 	// LAB 3: Your code here.
 
+	// defino un struct del tipo Elf
+	struct Elf *elf = (struct Elf *) binary;
+
+	// envio un panic si encuentro problemas
+	if (elf->e_magic != ELF_MAGIC) {
+		panic("panic: ELF_MAGIC");
+	}
+
+	lcr3(PADDR(e->env_pgdir));
+	struct Proghdr *program_headers_offset =
+	        (struct Proghdr *) ((uint8_t *) elf + elf->e_phoff);
+	struct Proghdr *program_headers_end =
+	        program_headers_offset + elf->e_phnum;
+	for (; program_headers_offset < program_headers_end;
+	     program_headers_offset++) {
+		if (program_headers_offset->p_type != ELF_PROG_LOAD) {
+			continue;
+		}
+		region_alloc(e,
+		             (void *) program_headers_offset->p_va,
+		             program_headers_offset->p_memsz);
+		memcpy((void *) program_headers_offset->p_va,
+		       binary + program_headers_offset->p_offset,
+		       program_headers_offset->p_filesz);
+		memset((void *) (program_headers_offset->p_va +
+		                 program_headers_offset->p_filesz),
+		       0,
+		       program_headers_offset->p_memsz -
+		               program_headers_offset->p_filesz);
+	}
+
 	// Now map one page for the program's initial stack
 	// at virtual address USTACKTOP - PGSIZE.
 
 	// LAB 3: Your code here.
+
+	// Se debe, además, configurar el entry point del proceso.
+	e->env_tf.tf_eip = elf->e_entry;
+	region_alloc(e, (void *) (USTACKTOP - PGSIZE), PGSIZE);
+	// restauramos la pgdir del kern
+	lcr3(PADDR(kern_pgdir));
 }
 
 //
@@ -372,6 +428,17 @@ void
 env_create(uint8_t *binary, enum EnvType type)
 {
 	// LAB 3: Your code here.
+	struct Env *e = NULL;
+	// alocamos un nuevo en con la funcion env_alloc
+	int err = env_alloc(&e, 0);
+	// en caso de ser necesario arrojamos un panic
+	if (err < 0) {
+		panic("env_create: %e", err);
+	}
+	// procedemos a cargar binary en el env e
+	load_icode(e, binary);
+	// seteamos e->env_type
+	e->env_type = type;
 }
 
 //
