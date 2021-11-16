@@ -556,5 +556,25 @@ env_run(struct Env *e)
 
 	// LAB 3: Your code here.
 
-	panic("env_run not yet implemented");
+	//	   1. Set the current environment (if any) back to
+	//	      ENV_RUNNABLE if it is ENV_RUNNING (think about
+	//	      what other states it can be in),
+	if (curenv != NULL) {
+		if (curenv->env_status == ENV_RUNNING) {
+			curenv->env_status = ENV_RUNNABLE;
+		}
+	}
+	//	   2. Set 'curenv' to the new environment (e)
+	curenv = e;
+	//	   3. Set its status to ENV_RUNNING,
+	curenv->env_status = ENV_RUNNING;
+	//	   4. Update its 'env_runs' counter,
+	curenv->env_runs += 1;
+	//	   5. Use lcr3() to switch to its address space.
+	lcr3(PADDR(e->env_pgdir));	
+	// Step 2: Use env_pop_tf() to restore the environment's
+	//	   registers and drop into user mode in the
+	//	   environment.
+	env_pop_tf(&e->env_tf);
+	//panic("env_run not yet implemented");
 }
