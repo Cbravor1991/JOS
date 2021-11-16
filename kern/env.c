@@ -571,10 +571,10 @@ env_run(struct Env *e)
 	//	   4. Update its 'env_runs' counter,
 	curenv->env_runs += 1;
 	//	   5. Use lcr3() to switch to its address space.
-	lcr3(PADDR(e->env_pgdir));	
+	lcr3(PADDR(e->env_pgdir));
 	// Step 2: Use env_pop_tf() to restore the environment's
 	//	   registers and drop into user mode in the
 	//	   environment.
 	env_pop_tf(&e->env_tf);
-	//panic("env_run not yet implemented");
+	// panic("env_run not yet implemented");
 }
