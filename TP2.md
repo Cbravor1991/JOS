@@ -75,6 +75,59 @@ Los bytes representan ...TODO
 env_pop_tf
 ----------
 
+```
+
+struct Trapframe {
+	struct PushRegs tf_regs;
+	uint16_t tf_es;
+	uint16_t tf_padding1;
+	uint16_t tf_ds;
+	uint16_t tf_padding2;
+	uint32_t tf_trapno;
+	/* below here defined by x86 hardware */
+	uint32_t tf_err;
+	uintptr_t tf_eip;
+	uint16_t tf_cs;
+	uint16_t tf_padding3;
+	uint32_t tf_eflags;
+	/* below here only when crossing rings, such as from user to kernel */
+	uintptr_t tf_esp;
+	uint16_t tf_ss;
+	uint16_t tf_padding4;
+} __attribute__((packed));
+
+```
+
+
+* `%0` hace referencia a un operando (el primero), en este caso es el que se pasa por parámetro: `tf`. Entonces el tope de la pila justo antes de `popal` tiene el puntero tf (direccion a la que apunta).
+* `popal` restaura todos los registros. `popl` popea el stack, esto se hace 2 veces. Luego se le suma `0x8` (`/* skip tf_trapno and tf_errcode */`). Con este último comentario se puede asumir que el tope de la pila va a contener a `uintptr_t tf_eip`.
+* Los siguientes tres elementos serán  `tf_cs`, `tf_padding3` y `tf_eflags` será el tercer elemento antes de ejecutarse `iret`.
+
+
+</br>
+</br>
+
+De la función `env_alloc()`
+```
+	// Set up appropriate initial values for the segment registers.
+	// GD_UD is the user data segment selector in the GDT, and
+	// GD_UT is the user text segment selector (see inc/memlayout.h).
+	// The low 2 bits of each segment register contains the
+	// Requestor Privilege Level (RPL); 3 means user mode.  When
+	// we switch privilege levels, the hardware does various
+	// checks involving the RPL and the Descriptor Privilege Level
+	// (DPL) stored in the descriptors themselves.
+	e->env_tf.tf_ds = GD_UD | 3;
+	e->env_tf.tf_es = GD_UD | 3;
+	e->env_tf.tf_ss = GD_UD | 3;
+	e->env_tf.tf_esp = USTACKTOP;
+	e->env_tf.tf_cs = GD_UT | 3;
+	// You will set e->env_tf.tf_eip later.
+
+```
+
+Para determinar el nivel se ven los 2 bits más bajos. X86 lo hace en los de `tf_cs`. FALTA COMO DETERMINA UN CAMBIO X86
+
 ...
 
 
