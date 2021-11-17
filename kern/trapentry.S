@@ -43,13 +43,48 @@
 
 .text
 
-/*
- * Lab 3: Your code here for generating entry points for the different traps.
- */
+//definimos los interrupt handler sigueindo el orden de
+//la tabla de intel para designar la interrupcion utilizo
+// el patron definido por la catedra trap_N
 
 
+TRAPHANDLER_NOEC(trap_0, T_DIVIDE)
+TRAPHANDLER_NOEC(trap_1, T_DEBUG)
+TRAPHANDLER_NOEC(trap_2, T_NMI)
+TRAPHANDLER_NOEC(trap_3, T_BRKPT)
+TRAPHANDLER_NOEC(trap_4, T_OFLOW)
+TRAPHANDLER_NOEC(trap_5, T_BOUND)
+TRAPHANDLER_NOEC(trap_6, T_ILLOP)
+TRAPHANDLER_NOEC(trap_7, T_DEVICE)
+TRAPHANDLER(trap_8, T_DBLFLT)
+
+TRAPHANDLER(trap_10, T_TSS)
+TRAPHANDLER(trap_11, T_SEGNP)
+TRAPHANDLER(trap_12, T_STACK)
+TRAPHANDLER(trap_13, T_GPFLT)
+TRAPHANDLER(trap_14, T_PGFLT)
+
+TRAPHANDLER_NOEC(trap_16, T_FPERR)
+TRAPHANDLER(trap_17, T_ALIGN)
+TRAPHANDLER_NOEC(trap_18, T_MCHK)
+TRAPHANDLER_NOEC(trap_19, T_SIMDERR)
+TRAPHANDLER_NOEC(trap_20, T_SYSCALL)
 
 /*
  * Lab 3: Your code here for _alltraps
  */
+
+ _alltraps:
+
+ 	pushl %ds
+	pushl %es
+    pushal
+
+movl $GD_KD, %eax
+	movw %ax, %ds
+	movw %ax, %es
+
+	pushl %esp
+	call trap
+
 

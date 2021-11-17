@@ -57,13 +57,71 @@ trapname(int trapno)
 	return "(unknown trap)";
 }
 
+void trap_0();
+void trap_1();
+
+void trap_3();
+void trap_4();
+void trap_5();
+void trap_6();
+void trap_7();
+void trap_8();
+
+void trap_10();
+void trap_11();
+void trap_12();
+void trap_13();
+void trap_14();
+
+void trap_16();
+void trap_17();
+void trap_18();
+void trap_19();
+void trap_20();
+
 
 void
 trap_init(void)
 {
 	extern struct Segdesc gdt[];
 
-	// LAB 3: Your code here.
+
+	// DIVIDE ERROR #DE
+	SETGATE(idt[T_DIVIDE], 0, GD_KT, trap_0, 0);
+	// DEBUG EXCEPTION
+	SETGATE(idt[T_DEBUG], 0, GD_KT, trap_1, 0);
+	// Breakpoint
+	SETGATE(idt[T_BRKPT], 0, GD_KT, trap_3, 3);
+	// Overflow
+	SETGATE(idt[T_OFLOW], 0, GD_KT, trap_4, 0);
+	// Bound Range Exceded
+	SETGATE(idt[T_BOUND], 0, GD_KT, trap_5, 0);
+	// Invalid Opcode
+	SETGATE(idt[T_ILLOP], 0, GD_KT, trap_6, 0);
+	// Device Not Available
+	SETGATE(idt[T_DEVICE], 0, GD_KT, trap_7, 0);
+	// Double Fault
+	SETGATE(idt[T_DBLFLT], 0, GD_KT, trap_8, 0);
+	// Invalid TSS
+	SETGATE(idt[T_TSS], 0, GD_KT, trap_10, 0);
+	// Segment Not Present
+	SETGATE(idt[T_SEGNP], 0, GD_KT, trap_11, 0);
+	// Stack-Segment Fault
+	SETGATE(idt[T_STACK], 0, GD_KT, trap_12, 0);
+	// General Protection
+	SETGATE(idt[T_GPFLT], 0, GD_KT, trap_13, 0);
+	// Page Fault
+	SETGATE(idt[T_PGFLT], 0, GD_KT, trap_14, 0);
+	// x87 FPU Floating-Point Error (Math Fault)
+	SETGATE(idt[T_FPERR], 0, GD_KT, trap_16, 0);
+	// Alignment Check
+	SETGATE(idt[T_ALIGN], 0, GD_KT, trap_17, 0);
+	// Machine ChecK
+	SETGATE(idt[T_MCHK], 0, GD_KT, trap_18, 0);
+	// SIMD Floating-Point Exception
+	SETGATE(idt[T_SIMDERR], 0, GD_KT, trap_19, 0);
+	// SYSCALL interrupt
+	SETGATE(idt[T_SYSCALL], 0, GD_KT, trap_20, 3);
 
 	// Per-CPU setup
 	trap_init_percpu();
