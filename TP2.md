@@ -135,3 +135,41 @@ gdb_hello
 ---------
 
 ...
+
+kern_idt
+---------
+
+...
+
+A continuación procedemos a responder las preguntas solicitadas en el enunciado
+
+1)¿Cómo decidir si usar TRAPHANDLER o TRAPHANDLER_NOEC? ¿Qué pasaría si se usara solamente la primera?
+
+Para saber si se debe usar TRAPHANDEL o TRAPHANDLER_NOEC, se debe tener en cuenta cada excepción/interrupcion. Si cuando se produce una excepción/interrupción la CPU procede a realizar un push al stack del codigo del error se utiliza TRAPHANDEL. Por el contrario si no se realiza un push del codigo del error se usa TRAPHANDLER_NOEC.
+Si solo utilizara TRAPHANDLER, cuando la CPU no realiza un push del codigo de error, el trap frame quedaría distinto, y se generarian errores.
+
+...
+
+2)¿Qué cambia, en la invocación de handlers, el segundo parámetro (istrap) de la macro SETGATE? ¿Por qué se elegiría un comportamiento u otro durante un syscall?
+
+Según el valor que tome el parametro istrap de la macro SETGATE se definira el comportamiento del manejo del problema.
+
+* istrap=0: Cuando istrap toma este valor se esta tratando con una interrupción por lo cual se resetea el valor de IF lo que hace que las interrupciones sean deshabilitadas. De esta manera se evita que otras interrupciones obstaculizen el manejo de la primera interrupción.
+
+* istrap = 1: Cuando istrap toma este valor se esta trantando con una execpción no se modifica el valor IF.
+
+
+ 3) Leer user/softint.c y ejecutarlo con make run-softint-nox. ¿Qué interrupción trata de generar? ¿Qué interrupción se genera? Si son diferentes a la que invoca el programa… ¿cuál es el mecanismo por el que ocurrió esto, y por qué motivos? ¿Qué modificarían en JOS para cambiar este comportamiento?
+
+ Si ejecutamos por consola make run-softint-nox, la misma nos devuelve:
+
+ ![](./run-softint-nox.png)
+
+Como podemos observar en la imagen anterior se genero una excepción del tipo General Protection, la exepción que debiamos haber obtenido según user/softint.c es Page Fault (asm volatile("int $14");// page fault).
+La interrupción llamada en sofint.c es la interrupción numero 14, cuando la misma fue declarada en el archivo trap.c se lo hizo de tal forma que solo puede ser lanzada en modo kernel. Y como el archivo user/sofint.c se ejecuta en modo usuario, fue lanzada la execepciṕm General Protection.
+El procesador utiliza un mecanismo para controlar en que modo pueden lanzarse las interrupciones, este control se realiza mediante los campos DPL (indica el nivel de privilegio del segmento) y CPL (indica el nivel de privilegio del procedimiento).
+
+
+
+
+
