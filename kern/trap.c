@@ -201,6 +201,17 @@ trap_dispatch(struct Trapframe *tf)
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
 
+	// se maneja la excepcion del tipo breakpoint
+	if (tf->tf_trapno == T_BRKPT) {
+		monitor(tf);
+		return;
+	}
+
+	//se maneja la excepcion del tipo page fault
+	if (tf->tf_trapno == T_PGFLT) {
+		page_fault_handler(tf);
+	}
+
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
 	if (tf->tf_cs == GD_KT)
