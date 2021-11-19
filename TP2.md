@@ -169,7 +169,25 @@ Como podemos observar en la imagen anterior se genero una excepción del tipo Ge
 La interrupción llamada en sofint.c es la interrupción numero 14, cuando la misma fue declarada en el archivo trap.c se lo hizo de tal forma que solo puede ser lanzada en modo kernel. Y como el archivo user/sofint.c se ejecuta en modo usuario, fue lanzada la execepciṕm General Protection.
 El procesador utiliza un mecanismo para controlar en que modo pueden lanzarse las interrupciones, este control se realiza mediante los campos DPL (indica el nivel de privilegio del segmento) y CPL (indica el nivel de privilegio del procedimiento).
 
+...
 
+user_evilhello
+---------
+
+...
+
+Cuando ejecutamos la versión de evilhello.c brindada en el codigo del tp2 obtenemos lo siguiente:
+
+![](./umainOriginal.png)
+
+Mientras que cuando ejecutamos la versión dada por el enunciado la salida es:
+
+![](./umainEnunciado.png)
+
+En el codigo de evilhello.c del tp2  se le pasa como parametro a sys_cputs la dirección 0xf010000c, esta es una dirección de memoria invalida ya que es una dirección de memoria del kernel.
+En la segunda versión se le pasa una dirección valida, esto sucede ya que la variable first se encuentra declarada en el stack del proceso, pero el contenido de la variable es una memoria invalida, ya que como digimos previamente 0xf010000c pertenece al kernel.
+
+La versión original del codigo lograra ejecutarse correctamente esto se debe a que no esta implementada un proteccion de memoria durante un syscall, ya que la dirección sera accedidad en modo kernel dentro del handler de la syscall no se da un Page Fault.
 
 
 
