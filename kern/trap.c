@@ -77,7 +77,7 @@ void trap_16();
 void trap_17();
 void trap_18();
 void trap_19();
-void trap_20();
+void trap_48();
 
 
 void
@@ -121,7 +121,7 @@ trap_init(void)
 	// SIMD Floating-Point Exception
 	SETGATE(idt[T_SIMDERR], 0, GD_KT, trap_19, 0);
 	// SYSCALL interrupt
-	SETGATE(idt[T_SYSCALL], 0, GD_KT, trap_20, 3);
+	SETGATE(idt[T_SYSCALL], 0, GD_KT, trap_48, 3);
 
 	// Per-CPU setup
 	trap_init_percpu();
@@ -210,6 +210,18 @@ trap_dispatch(struct Trapframe *tf)
 	// se maneja la excepcion del tipo page fault
 	if (tf->tf_trapno == T_PGFLT) {
 		page_fault_handler(tf);
+	}
+
+	// se invoca a la función syscall
+	if (tf->tf_trapno == T_SYSCALL) {
+		// especifican los parametros respetando la convencion
+		tf->tf_regs.reg_eax = syscall(tf->tf_regs.reg_eax,
+		                              tf->tf_regs.reg_edx,
+		                              tf->tf_regs.reg_ecx,
+		                              tf->tf_regs.reg_ebx,
+		                              tf->tf_regs.reg_edi,
+		                              tf->tf_regs.reg_esi);
+		return;
 	}
 
 	// Unexpected trap: The user process or the kernel has a bug.

@@ -68,7 +68,9 @@ TRAPHANDLER_NOEC(trap_16, T_FPERR)
 TRAPHANDLER(trap_17, T_ALIGN)
 TRAPHANDLER_NOEC(trap_18, T_MCHK)
 TRAPHANDLER_NOEC(trap_19, T_SIMDERR)
-TRAPHANDLER_NOEC(trap_20, T_SYSCALL)
+// cambio la identificacion de trap_20 a trap_48 
+//para acoplarme a nomenclatura enunciado
+TRAPHANDLER_NOEC(trap_48, T_SYSCALL)
 
 /*
  * Lab 3: Your code here for _alltraps
