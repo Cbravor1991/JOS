@@ -207,7 +207,7 @@ trap_dispatch(struct Trapframe *tf)
 		return;
 	}
 
-	//se maneja la excepcion del tipo page fault
+	// se maneja la excepcion del tipo page fault
 	if (tf->tf_trapno == T_PGFLT) {
 		page_fault_handler(tf);
 	}
