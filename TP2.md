@@ -134,6 +134,18 @@ Para determinar el nivel se ven los 2 bits más bajos. X86 lo hace en los de `tf
 gdb_hello
 ---------
 
+1. 
+2. ![](./info_registers.png)
+3. ![](./p_tf)
+4. ![](./Nx_tf.png)
+5. ![](./disas.png)
+6.  Son los mismos
+7.  Describir
+8.  ![](./info_registers_2.png)
+9.  ![](./pc.png) </br> ![](./info_registers_3.png)
+10. ![](./info_pre_tb.png) </br> ![](./info_registers_post_tb.png)
+
+
 ...
 
 kern_idt
