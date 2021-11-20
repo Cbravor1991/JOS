@@ -39,7 +39,7 @@ El proceso que se va a lanzar será 4096 más el offset 630, en hexadecimal: `10
 
 env_init_percpu
 ---------------
-
+ luego de la syscall.
 A `lgdt` le paso como parámetro `gdt_pd = { sizeof(gdt) - 1, (unsigned long) gdt }`
 
 `sizeof(gdt) = 6 bytes`, se puede ver a continuación el tamaño del struct de acuerdo a las direcciones donde escribe
@@ -67,7 +67,7 @@ struct Segdesc gdt[] = {
 
 ```
 
-Los bytes representan ...TODO
+Los bytes representan el tamaño y direccion de la GDT.
 
 ...
 
@@ -126,7 +126,7 @@ De la función `env_alloc()`
 
 ```
 
-Para determinar el nivel se ven los 2 bits más bajos. X86 lo hace en los de `tf_cs`. FALTA COMO DETERMINA UN CAMBIO X86
+Para determinar el nivel se ven los 2 bits más bajos. X86 lo hace en los de `tf_cs`. Para ver si hubo un cambio de ring compara los 2 bits más bajos de `tf_cs` y `%cs` (actual): si son iguales no hubo cambio, si difieren es que hubo un cambio en el nivel de privilegio
 
 ...
 
@@ -134,16 +134,16 @@ Para determinar el nivel se ven los 2 bits más bajos. X86 lo hace en los de `tf
 gdb_hello
 ---------
 
-1. 
-2. ![](./info_registers.png)
-3. ![](./p_tf)
-4. ![](./Nx_tf.png)
-5. ![](./disas.png)
-6.  Son los mismos
-7.  Describir
-8.  ![](./info_registers_2.png)
-9.  ![](./pc.png) </br> ![](./info_registers_3.png)
-10. ![](./info_pre_tb.png) </br> ![](./info_registers_post_tb.png)
+1. Poner un breakpoint en env_pop_tf() y continuar la ejecución hasta allí. </br> </br>
+2. En QEMU, entrar en modo monitor (Ctrl-a c), y mostrar las cinco primeras líneas del comando info registers. </br> ![](./info_registers.png) </br> </br>
+3. De vuelta a GDB, imprimir el valor del argumento tf. </br> ![](./p_tf.png) </br> </br>
+4. Imprimir, con x/Nx tf tantos enteros como haya en el struct Trapframe donde N = sizeof(Trapframe) / sizeof(int). </br> ![](./Nx_tf.png) </br> </br>
+5. Avanzar hasta justo después del movl ...,%esp, usando si M para ejecutar tantas instrucciones como sea necesario en un solo paso. </br> ![](./disas.png) </br> </br>
+6.  Comprobar, con x/Nx $sp que los contenidos son los mismos que tf (donde N es el tamaño de tf). Se observa en imágenes de punt 5 y 4 </br> </br>
+7.  Describir cada uno de los valores. Para los valores no nulos, se debe indicar dónde se configuró inicialmente el valor, y qué representa.  Mostrar en este punto, de nuevo, las cinco primeras líneas de info registers en el monitor de QEMU. Explicar los cambios producidos. </br> </br> ![](./gdb_hello_7.png) </br> </br>  Se puede observar que los primeros 8 son los del `struct PushRegs` (primer elemento de `struct TrapFrame`) que se encuentran todos en cero. Luego viene `tf_es` con un valor de 0x23 y `tf_ds` con 0x23 tambíén (ignoro padding). El valor 0x23 apunta al segmento de memoria. Luego viene `tf_trapno` y `tf_err` en 0x0. `tf_eip` tiene un valor de 0x00800020, correspondiente al lugar de retorno. Luego viene `tf_cs` cuyos 2 últimos bits indican el ring donde se encuentra el proceso, el valor es 0x1b, si se toman los últimos 2 bits se obtiene el 11 o 0x3 (modo usuario). Luego viene `tf_eflags` en 0x0, `tf_esp` en 0xeebfe000 que indica que valor tomará el registro %esp al retornar. Finalmente `tf_ss` tiene el valor 0x23. El DPL de ES pasó a valer 3 y ek DPL de cs vale 0.
+8.Continuar hasta la instrucción iret, sin llegar a ejecutarla. </br>  ![](./info_registers_2.png) </br> </br>
+9. Ejecutar la instrucción iret. En ese momento se ha realizado el cambio de contexto y los símbolos del kernel ya no son válidos. ![](./pc.png) </br> ![](./info_registers_3.png) </br> </br> Se observa que el DPL de cs ahora vale 3 (user mode)
+10. Poner un breakpoint temporal (tbreak, se aplica una sola vez) en la función syscall() y explicar qué ocurre justo tras ejecutar la instrucción int $0x30. Usar, de ser necesario, el monitor de QEMU. ![](./info_pre_tb.png) </br> ![](./info_registers_post_tb.png) </br> </br> Se observa que el DPL de cs pasa de valer 3 a 0.
 
 
 ...
