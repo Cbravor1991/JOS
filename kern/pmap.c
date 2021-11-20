@@ -646,7 +646,31 @@ int
 user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 {
 	// LAB 3: Your code here.
+	uintptr_t start_addr = ROUNDDOWN((uintptr_t) va, PGSIZE);
+	uintptr_t end_addr = ROUNDUP((uintptr_t) va + len, PGSIZE);
+	uint32_t addr;
+	pte_t *pte = pgdir_walk(env->env_pgdir, (void *) va, 0);
 
+
+	// analizo los permisos
+
+
+	if (!pte || ((*pte & perm) != perm) || ((uintptr_t) va >= ULIM)) {
+		user_mem_check_addr = (uintptr_t) va;
+		return -E_FAULT;
+	}
+
+	// avanzo sobre la memoria y analizo los permisos
+	// en busca de direcciones de memoria erroneas
+
+	for (addr = start_addr; addr < end_addr; addr += PGSIZE) {
+		pte = pgdir_walk(env->env_pgdir, (void *) addr, 0);
+
+		if (!pte || ((*pte & perm) != perm) || addr >= ULIM) {
+			user_mem_check_addr = (uintptr_t) addr;
+			return -E_FAULT;
+		}
+	}
 	return 0;
 }
 
