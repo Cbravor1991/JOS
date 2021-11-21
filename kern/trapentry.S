@@ -43,7 +43,7 @@
 
 .text
 
-//definimos los interrupt handler sigueindo el orden de
+//definimos los interrupt handler siguiendo el orden de
 //la tabla de intel para designar la interrupcion utilizo
 // el patron definido por la catedra trap_N
 
@@ -57,13 +57,11 @@ TRAPHANDLER_NOEC(trap_5, T_BOUND)
 TRAPHANDLER_NOEC(trap_6, T_ILLOP)
 TRAPHANDLER_NOEC(trap_7, T_DEVICE)
 TRAPHANDLER(trap_8, T_DBLFLT)
-
 TRAPHANDLER(trap_10, T_TSS)
 TRAPHANDLER(trap_11, T_SEGNP)
 TRAPHANDLER(trap_12, T_STACK)
 TRAPHANDLER(trap_13, T_GPFLT)
 TRAPHANDLER(trap_14, T_PGFLT)
-
 TRAPHANDLER_NOEC(trap_16, T_FPERR)
 TRAPHANDLER(trap_17, T_ALIGN)
 TRAPHANDLER_NOEC(trap_18, T_MCHK)
@@ -76,16 +74,18 @@ TRAPHANDLER_NOEC(trap_48, T_SYSCALL)
  * Lab 3: Your code here for _alltraps
  */
 
+ /* cargar GD_KD en %ds y %es mediante un registro intermedio 
+ *de 16 bits (por ejemplo, %ax). Considerar, además, que GD_KD es una constante numérica, 
+ *no una dirección de memoria (‘mov $GD_KD’ vs ‘mov GD_KD’). */
+
  _alltraps:
 
  	pushl %ds
 	pushl %es
     pushal
-
-movl $GD_KD, %eax
+	movl $GD_KD, %eax
 	movw %ax, %ds
 	movw %ax, %es
-
 	pushl %esp
 	call trap
 

@@ -303,13 +303,12 @@ region_alloc(struct Env *e, void *va, size_t len)
 	// se nos solicita que redondeamos va+len hacia arriba
 	uintptr_t end = ROUNDUP((uintptr_t) va + len, PGSIZE);
 
-	// necesitamos saber las paginas que vamos a alocar
-
+	
 
 	while (begin < end) {
 		struct PageInfo *page = page_alloc(0);
 		if (!page) {
-			panic("panic: region alloc page null\n");
+			panic("region alloc page null\n");
 		}
 
 
@@ -429,7 +428,7 @@ env_create(uint8_t *binary, enum EnvType type)
 {
 	// LAB 3: Your code here.
 	struct Env *e = NULL;
-	// alocamos un nuevo en con la funcion env_alloc
+	// alocamos un nuevo env con la funcion env_alloc
 	int err = env_alloc(&e, 0);
 	// en caso de ser necesario arrojamos un panic
 	if (err < 0) {

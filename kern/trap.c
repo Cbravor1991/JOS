@@ -59,20 +59,17 @@ trapname(int trapno)
 
 void trap_0();
 void trap_1();
-
 void trap_3();
 void trap_4();
 void trap_5();
 void trap_6();
 void trap_7();
 void trap_8();
-
 void trap_10();
 void trap_11();
 void trap_12();
 void trap_13();
 void trap_14();
-
 void trap_16();
 void trap_17();
 void trap_18();
@@ -86,9 +83,9 @@ trap_init(void)
 	extern struct Segdesc gdt[];
 
 
-	// DIVIDE ERROR #DE
+	// Divide error
 	SETGATE(idt[T_DIVIDE], 0, GD_KT, trap_0, 0);
-	// DEBUG EXCEPTION
+	// Debug Exception
 	SETGATE(idt[T_DEBUG], 0, GD_KT, trap_1, 0);
 	// Breakpoint
 	SETGATE(idt[T_BRKPT], 0, GD_KT, trap_3, 3);

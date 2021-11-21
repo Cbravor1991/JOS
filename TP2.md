@@ -199,7 +199,8 @@ Mientras que cuando ejecutamos la versión dada por el enunciado la salida es:
 En el codigo de evilhello.c del tp2  se le pasa como parametro a sys_cputs la dirección 0xf010000c, esta es una dirección de memoria invalida ya que es una dirección de memoria del kernel.
 En la segunda versión se le pasa una dirección valida, esto sucede ya que la variable first se encuentra declarada en el stack del proceso, pero el contenido de la variable es una memoria invalida, ya que como digimos previamente 0xf010000c pertenece al kernel.
 
-La versión original del codigo lograra ejecutarse correctamente esto se debe a que no esta implementada un proteccion de memoria durante un syscall, ya que la dirección sera accedidad en modo kernel dentro del handler de la syscall no se da un Page Fault.
+La versión original del codigo lograra ejecutarse correctamente esto se debe a que no esta implementada un proteccion de memoria durante un syscall, ya que la dirección sera accedida en modo kernel dentro del handler de la syscall no se da un Page Fault.
+En cambio en la segunda version se tratara de acceder a la dirección en modo usuario y por eso se obtiene un Page Fault.
 
 
 
