@@ -303,7 +303,6 @@ region_alloc(struct Env *e, void *va, size_t len)
 	// se nos solicita que redondeamos va+len hacia arriba
 	uintptr_t end = ROUNDUP((uintptr_t) va + len, PGSIZE);
 
-	
 
 	while (begin < end) {
 		struct PageInfo *page = page_alloc(0);
