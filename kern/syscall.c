@@ -194,11 +194,12 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	}
 
 	//PGSIZE = 4096 . ROUNDOWN o ROUNDUP, probar
-	if (va >= UTOP || ROUNDDOWN(va, PGSIZE) != va) {
+	uintptr_t va_comp = (uintptr_t) va;
+	if (va_comp >= UTOP || ROUNDDOWN(va, PGSIZE) != va) {
 		return -E_INVAL;
 	}
 	//PTE_SYSCALL == (PTE_AVAIL | PTE_P | PTE_W | PTE_U)
-	if ((PTE_U | PTE_P) & perm == 0 || !(perm & PTE_SYSCALL == perm)) {
+	if ((((PTE_U | PTE_P) & perm) == 0) || !((perm & PTE_SYSCALL) == perm)) {
 		return -E_INVAL;
 	}
 
@@ -214,7 +215,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	error = page_insert(env->env_pgdir, page, va, perm);
 	if (error < 0) {
 		// uno de los 2, cual?
-		page_remove(page, va);
+		//page_remove(page, va);
 		page_free(page);
 		return -E_NO_MEM;
 	}
@@ -257,7 +258,9 @@ sys_page_map(envid_t srcenvid, void *srcva, envid_t dstenvid, void *dstva, int p
 	if (error < 0) {
 		return -E_BAD_ENV; 
 	}
-	if ((srcva >= UTOP || ROUNDDOWN(srcva, PGSIZE) != srcva) || (dstva >= UTOP || ROUNDDOWN(dstva, PGSIZE) != dstva)) {
+	uintptr_t srcva_comp = (uintptr_t) srcva;
+	uintptr_t dstva_comp = (uintptr_t) dstva;
+	if ((srcva_comp >= UTOP || ROUNDDOWN(srcva, PGSIZE) != srcva) || (dstva_comp >= UTOP || ROUNDDOWN(dstva, PGSIZE) != dstva)) {
 		return -E_INVAL;
 	}
 
@@ -269,7 +272,7 @@ sys_page_map(envid_t srcenvid, void *srcva, envid_t dstenvid, void *dstva, int p
 	}
 	
 	//PTE_SYSCALL == (PTE_AVAIL | PTE_P | PTE_W | PTE_U)
-	if ((PTE_U | PTE_P) & perm == 0 || !(perm & PTE_SYSCALL == perm)) {
+	if ((((PTE_U | PTE_P) & perm) == 0) || !((perm & PTE_SYSCALL) == perm)) {
 		return -E_INVAL;
 	}
 	// de page_lookup:
@@ -289,7 +292,7 @@ sys_page_map(envid_t srcenvid, void *srcva, envid_t dstenvid, void *dstva, int p
 	error = page_insert(dste_env->env_pgdir, page, dstva, perm);
 	if (error < 0) {
 		// uno de los 2, cual?
-		page_remove(page, dstva);
+		//page_remove(page, dstva);
 		page_free(page);
 		return -E_NO_MEM;
 	}
@@ -310,12 +313,13 @@ sys_page_unmap(envid_t envid, void *va)
 	// Hint: This function is a wrapper around page_remove().
 
 	// LAB 4: Your code here.
-		struct Env* env;
+	struct Env* env;
 	int error = envid2env(envid, &env, 1);
 	if (error < 0) {
 		return -E_BAD_ENV;
 	}
-	if (va >= UTOP || ROUNDDOWN(va, PGSIZE) != va) {
+	uintptr_t va_comp = (uintptr_t) va;
+	if (va_comp >= UTOP || ROUNDDOWN(va, PGSIZE) != va) {
 		return -E_INVAL;
 	}
 	// page remove hace exactamente lo siguiente
