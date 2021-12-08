@@ -86,7 +86,26 @@ sys_exofork(void)
 	// will appear to return 0.
 
 	// LAB 4: Your code here.
-	panic("sys_exofork not implemented");
+		//sys_getenvid() -> devuelve el current env id (el del padre?)
+	struct Env *new_env;
+
+	int error = env_alloc(&new_env, curenv->env_id);
+	if (error < 0) {
+		return error;
+	}
+	//status is set to ENV_NOT_RUNNABLE
+	new_env->env_status = ENV_NOT_RUNNABLE;
+	//register set copied from current env
+	new_env->env_tf = curenv->env_tf;
+	
+	
+	new_env->env_tf.tf_regs.reg_eax = 0; 
+	
+	envid_t new_env_id = new_env->env_id;
+
+	return new_env_id;
+
+	//panic("sys_exofork not implemented");
 }
 
 // Set envid's env_status to status, which must be ENV_RUNNABLE
