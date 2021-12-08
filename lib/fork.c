@@ -59,7 +59,9 @@ duppage(envid_t envid, unsigned pn)
 }
 
 
-envid_t fork_v0() {
+envid_t
+fork_v0()
+{
 	envid_t envid;
 	uint8_t *addr;
 	int r;
@@ -77,12 +79,11 @@ envid_t fork_v0() {
 	// We're the parent.
 	// Eagerly copy our entire address space into the child.
 	// This is NOT what you should do in your fork implementation.
-	//for (addr = 0; addr < UTOP; addr += PGSIZE) {
+	// for (addr = 0; addr < UTOP; addr += PGSIZE) {
 	//
 	//}
-	return envid;	
+	return envid;
 }
-
 
 
 //
@@ -106,7 +107,7 @@ fork(void)
 {
 	// LAB 4: Your code here.
 	return fork_v0();
-	//panic("fork not implemented");
+	// panic("fork not implemented");
 }
 
 // Challenge!
