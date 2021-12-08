@@ -7,3 +7,4 @@ kern/trap.c
 lib/fork.c
 lib/ipc.c
 lib/libmain.c
+kern/init.c
