@@ -71,6 +71,8 @@ TRAPHANDLER_NOEC(trap_19, T_SIMDERR)
 //para acoplarme a nomenclatura enunciado
 TRAPHANDLER_NOEC(trap_48, T_SYSCALL)
 
+TRAPHANDLER_NOEC(irq_timer, IRQ_OFFSET + IRQ_TIMER);
+
 /*
  * Lab 3: Your code here for _alltraps
  */
