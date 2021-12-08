@@ -58,6 +58,33 @@ duppage(envid_t envid, unsigned pn)
 	return 0;
 }
 
+
+envid_t fork_v0() {
+	envid_t envid;
+	uint8_t *addr;
+	int r;
+	envid = sys_exofork();
+	if (envid < 0)
+		panic("sys_exofork: %e", envid);
+	if (envid == 0) {
+		// We're the child.
+		// The copied value of the global variable 'thisenv'
+		// is no longer valid (it refers to the parent!).
+		// Fix it and return 0.
+		thisenv = &envs[ENVX(sys_getenvid())];
+		return 0;
+	}
+	// We're the parent.
+	// Eagerly copy our entire address space into the child.
+	// This is NOT what you should do in your fork implementation.
+	for (addr = 0; addr < UTOP; addr += PGSIZE) {
+
+	}
+		
+}
+
+
+
 //
 // User-level fork with copy-on-write.
 // Set up our page fault handler appropriately.
@@ -78,7 +105,8 @@ envid_t
 fork(void)
 {
 	// LAB 4: Your code here.
-	panic("fork not implemented");
+	return fork_v0();
+	//panic("fork not implemented");
 }
 
 // Challenge!
