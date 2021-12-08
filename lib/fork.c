@@ -58,6 +58,13 @@ duppage(envid_t envid, unsigned pn)
 	return 0;
 }
 
+//Añado dup_or_share
+
+static void
+dup_or_share(envid_t dstenv, void *va, int perm) {
+
+
+}
 
 envid_t
 fork_v0()
@@ -78,10 +85,17 @@ fork_v0()
 	}
 	// We're the parent.
 	// Eagerly copy our entire address space into the child.
-	// This is NOT what you should do in your fork implementation.
-	// for (addr = 0; addr < UTOP; addr += PGSIZE) {
-	//
-	//}
+	
+	// si dire mapeada => dup_or_share
+	for (addr = 0; (int) addr < UTOP; addr += PGSIZE) {
+
+	}
+
+	// marco hijo
+	int error = sys_env_set_status(envid, ENV_RUNNABLE);
+	if (error < 0) {
+		panic("Couldnt set env status");
+	}
 	return envid;
 }
 
