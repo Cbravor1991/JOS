@@ -312,15 +312,14 @@ mem_init_mp(void)
 	//     Permissions: kernel RW, user NONE
 	//
 	// LAB 4: Your code here:
-	 for (int i = 0; i < NCPU; i++)
-    {
-        uintptr_t kstacktop_i = KSTACKTOP - i * (KSTKSIZE + KSTKGAP);
-        boot_map_region(kern_pgdir,
-                        kstacktop_i - KSTKSIZE,
-                        KSTKSIZE,
-                        PADDR(percpu_kstacks[i]),
-                        PTE_W);
-    }
+	for (int i = 0; i < NCPU; i++) {
+		uintptr_t kstacktop_i = KSTACKTOP - i * (KSTKSIZE + KSTKGAP);
+		boot_map_region(kern_pgdir,
+		                kstacktop_i - KSTKSIZE,
+		                KSTKSIZE,
+		                PADDR(percpu_kstacks[i]),
+		                PTE_W);
+	}
 }
 
 // --------------------------------------------------------------
@@ -342,7 +341,7 @@ page_init(void)
 	// Change your code to mark the physical page at MPENTRY_PADDR
 	// as in use
 	_Static_assert(MPENTRY_PADDR % PGSIZE == 0,
-               "MPENTRY_PADDR is not page-aligned");
+	               "MPENTRY_PADDR is not page-aligned");
 
 	// The example code here marks all physical pages as free.
 	// However this is not truly the case.  What memory is free?
@@ -369,7 +368,7 @@ page_init(void)
 			pages[i].pp_link = NULL;
 			continue;
 		}
-			if (page2pa(&pages[i])  == MPENTRY_PADDR) {
+		if (page2pa(&pages[i]) == MPENTRY_PADDR) {
 			continue;
 		}
 		if (page2pa(&pages[i]) >= IOPHYSMEM &&
@@ -382,7 +381,6 @@ page_init(void)
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
 	}
-	
 }
 
 //
@@ -709,7 +707,7 @@ mmio_map_region(physaddr_t pa, size_t size)
 		panic("Allocation exceeds MMIOLIM: %x", base + size);
 	}
 	boot_map_region(kern_pgdir, base, size, pa, PTE_PCD | PTE_PWT | PTE_W);
-	void *ret_base = (void*)base;
+	void *ret_base = (void *) base;
 	base += size;
 	return ret_base;
 }
