@@ -87,9 +87,11 @@ sys_exofork(void)
 
 	// LAB 4: Your code here.
 		//sys_getenvid() -> devuelve el current env id (el del padre?)
+
 	struct Env *new_env;
 
-	int error = env_alloc(&new_env, curenv->env_id);
+	//int error = env_alloc(&new_env, curenv->env_id);
+	int error = env_alloc(&new_env, sys_getenvid());
 	if (error < 0) {
 		return error;
 	}
@@ -199,9 +201,18 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 		return -E_INVAL;
 	}
 	//PTE_SYSCALL == (PTE_AVAIL | PTE_P | PTE_W | PTE_U)
-	if ((((PTE_U | PTE_P) & perm) == 0) || !((perm & PTE_SYSCALL) == perm)) {
+	if ((PTE_P & perm) == 0) {
 		return -E_INVAL;
 	}
+	if ((PTE_U & perm) == 0) {
+		return -E_INVAL;
+	}
+	if ((perm & PTE_SYSCALL) != perm) {
+		return -E_INVAL;
+	}
+	/*if ((((PTE_U | PTE_P) & perm) == 0) || !((perm & PTE_SYSCALL) == perm)) {
+		return -E_INVAL;
+	}*/
 
 	// atento al hint
 	struct PageInfo* page;
@@ -254,7 +265,7 @@ sys_page_map(envid_t srcenvid, void *srcva, envid_t dstenvid, void *dstva, int p
 	struct Env* srce_env;
 	struct Env* dste_env;
 	int error = envid2env(srcenvid, &srce_env, 0);
-	error = envid2env(srcenvid, &dste_env, 0);
+	error = envid2env(dstenvid, &dste_env, 0);
 	if (error < 0) {
 		return -E_BAD_ENV; 
 	}
@@ -272,9 +283,19 @@ sys_page_map(envid_t srcenvid, void *srcva, envid_t dstenvid, void *dstva, int p
 	}
 	
 	//PTE_SYSCALL == (PTE_AVAIL | PTE_P | PTE_W | PTE_U)
-	if ((((PTE_U | PTE_P) & perm) == 0) || !((perm & PTE_SYSCALL) == perm)) {
+	/*if ((((PTE_U | PTE_P) & perm) == 0) || !((perm & PTE_SYSCALL) == perm)) {
+		return -E_INVAL;
+	}*/
+	if ((PTE_P & perm) == 0) {
 		return -E_INVAL;
 	}
+	if ((perm & PTE_U) == 0) {
+		return -E_INVAL;
+	}
+	if ((perm & PTE_SYSCALL) != perm) {
+		return -E_INVAL;
+	}
+
 	// de page_lookup:
 	// pte is used by page_remove and
 	// can be used to verify page permissions for syscall arguments => srcva is read-only in srcenvid's
@@ -296,7 +317,7 @@ sys_page_map(envid_t srcenvid, void *srcva, envid_t dstenvid, void *dstva, int p
 		page_free(page);
 		return -E_NO_MEM;
 	}
-
+	return 0;
 	//panic("sys_page_map not implemented");
 }
 
@@ -310,7 +331,7 @@ sys_page_map(envid_t srcenvid, void *srcva, envid_t dstenvid, void *dstva, int p
 static int
 sys_page_unmap(envid_t envid, void *va)
 {
-	// Hint: This function is a wrapper around page_remove().
+	// Hint: This function is a wrapper around page_remove(). !!
 
 	// LAB 4: Your code here.
 	struct Env* env;
@@ -417,6 +438,16 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		return sys_getenvid();
 	case SYS_env_destroy:
 		return sys_env_destroy((envid_t) a1);
+	case SYS_page_map:
+		return sys_page_map(a1, (void*)a2, a3, (void*)a4, a5);
+	case SYS_page_alloc:
+		return sys_page_alloc(a1, (void*)a2, a3);
+	case SYS_page_unmap:
+		return sys_page_unmap(a1, (void*)a2);
+	case SYS_exofork:
+		return sys_exofork();
+	case SYS_env_set_status:
+		return sys_env_set_status(a1, a2);
 	default:
 		return -E_INVAL;
 	}
