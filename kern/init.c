@@ -78,7 +78,7 @@ i386_init(void)
 	env_run(&envs[0]);
 
 	// Schedule and run the first user environment!
-	sched_yield();|
+	sched_yield();
 }
 
 // While boot_aps is booting a given CPU, it communicates the per-core
