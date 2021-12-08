@@ -77,10 +77,10 @@ envid_t fork_v0() {
 	// We're the parent.
 	// Eagerly copy our entire address space into the child.
 	// This is NOT what you should do in your fork implementation.
-	for (addr = 0; addr < UTOP; addr += PGSIZE) {
-
-	}
-		
+	//for (addr = 0; addr < UTOP; addr += PGSIZE) {
+	//
+	//}
+	return envid;	
 }
 
 
