@@ -129,7 +129,7 @@ trap_init(void)
 	// SYSCALL interrupt
 	SETGATE(idt[T_SYSCALL], 0, GD_KT, trap_48, 3);
 
-	
+
 	SETGATE(idt[IRQ_OFFSET + IRQ_TIMER], false, GD_KT, irq_timer, 0);
 
 	// Per-CPU setup
@@ -270,7 +270,7 @@ trap_dispatch(struct Trapframe *tf)
 	// LAB 4: Your code here.
 	if (tf->tf_trapno == IRQ_OFFSET + IRQ_TIMER) {
 		lapic_eoi();
-		sched_yield(); // noreturn
+		sched_yield();  // noreturn
 	}
 
 	// Unexpected trap: The user process or the kernel has a bug.
