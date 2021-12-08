@@ -125,7 +125,22 @@ sys_env_set_status(envid_t envid, int status)
 	// envid's status.
 
 	// LAB 4: Your code here.
-	panic("sys_env_set_status not implemented");
+		//status must be ENV_RUNNABLE or ENV_NOT_RUNNABLE.
+	// si no es ninguno return
+	if (status != ENV_RUNNABLE && status != ENV_NOT_RUNNABLE) {
+		return -E_INVAL;
+	}
+
+	struct Env* env;
+	//agarra en el envid que le paso y me pone el env correspondiente en env (puntero)
+	int error = envid2env(envid, &env, 1);
+	if (error < 0) {
+		return error;
+	}
+	env->env_status = status;
+	//panic("sys_env_set_status not implemented");
+
+	return 0; //success
 }
 
 // Set the page fault upcall for 'envid' by modifying the corresponding struct
