@@ -249,7 +249,52 @@ sys_page_map(envid_t srcenvid, void *srcva, envid_t dstenvid, void *dstva, int p
 	//   check the current permissions on the page.
 
 	// LAB 4: Your code here.
-	panic("sys_page_map not implemented");
+	
+	struct Env* srce_env;
+	struct Env* dste_env;
+	int error = envid2env(srcenvid, &srce_env, 0);
+	error = envid2env(srcenvid, &dste_env, 0);
+	if (error < 0) {
+		return -E_BAD_ENV; 
+	}
+	if ((srcva >= UTOP || ROUNDDOWN(srcva, PGSIZE) != srcva) || (dstva >= UTOP || ROUNDDOWN(dstva, PGSIZE) != dstva)) {
+		return -E_INVAL;
+	}
+
+	struct PageInfo* page;
+	pte_t* pte_store;
+	page = page_lookup(srce_env->env_pgdir, srcva, &pte_store);
+	if (page == NULL) {
+		return -E_INVAL;
+	}
+	
+	//PTE_SYSCALL == (PTE_AVAIL | PTE_P | PTE_W | PTE_U)
+	if ((PTE_U | PTE_P) & perm == 0 || !(perm & PTE_SYSCALL == perm)) {
+		return -E_INVAL;
+	}
+	// de page_lookup:
+	// pte is used by page_remove and
+	// can be used to verify page permissions for syscall arguments => srcva is read-only in srcenvid's
+	// address space.
+	pte_t pte = *pte_store;
+	// aca seria de escritura
+	int res = pte & PTE_W;
+	// aca que no sea de escritura
+	res = !res;
+	if ((perm & PTE_W) && (res)) {
+		return -E_INVAL;
+	}
+	//mapeo
+
+	error = page_insert(dste_env->env_pgdir, page, dstva, perm);
+	if (error < 0) {
+		// uno de los 2, cual?
+		page_remove(page, dstva);
+		page_free(page);
+		return -E_NO_MEM;
+	}
+
+	//panic("sys_page_map not implemented");
 }
 
 // Unmap the page of memory at 'va' in the address space of 'envid'.
