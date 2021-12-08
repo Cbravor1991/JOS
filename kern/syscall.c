@@ -185,7 +185,41 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	//   allocated!
 
 	// LAB 4: Your code here.
-	panic("sys_page_alloc not implemented");
+		struct Env* env;
+	//	-E_BAD_ENV if environment envid doesn't currently exist,
+	//		or the caller doesn't have permission to change envid.
+	int error = envid2env(envid, &env, 1);
+	if (error < 0) {
+		return -E_BAD_ENV;
+	}
+
+	//PGSIZE = 4096 . ROUNDOWN o ROUNDUP, probar
+	if (va >= UTOP || ROUNDDOWN(va, PGSIZE) != va) {
+		return -E_INVAL;
+	}
+	//PTE_SYSCALL == (PTE_AVAIL | PTE_P | PTE_W | PTE_U)
+	if ((PTE_U | PTE_P) & perm == 0 || !(perm & PTE_SYSCALL == perm)) {
+		return -E_INVAL;
+	}
+
+	// atento al hint
+	struct PageInfo* page;
+	page = page_alloc(ALLOC_ZERO);
+	if (page == NULL) {
+		return -E_NO_MEM;
+	}
+	//mapeo
+	// If a page is already mapped at 'va', that page is unmapped as a
+	// side effect.
+	error = page_insert(env->env_pgdir, page, va, perm);
+	if (error < 0) {
+		// uno de los 2, cual?
+		page_remove(page, va);
+		page_free(page);
+		return -E_NO_MEM;
+	}
+	return 0;
+	//panic("sys_page_alloc not implemented");
 }
 
 // Map the page of memory at 'srcva' in srcenvid's address space
