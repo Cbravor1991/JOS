@@ -412,8 +412,21 @@ static int
 sys_ipc_recv(void *dstva)
 {
 	// LAB 4: Your code here.
-	panic("sys_ipc_recv not implemented");
-	return 0;
+
+
+	if (dstva < (void *) UTOP) {
+		if ((uintptr_t) dstva % PGSIZE != 0)
+			return -E_INVAL;
+	}
+	
+	curenv->env_ipc_dstva = dstva;
+
+	curenv->env_ipc_recving = true;
+	curenv->env_status = ENV_NOT_RUNNABLE;
+
+	curenv->env_tf.tf_regs.reg_eax = 0;
+	
+	sched_yield();
 }
 
 // Dispatches to the correct kernel function, passing the arguments.
