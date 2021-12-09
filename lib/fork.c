@@ -58,14 +58,31 @@ duppage(envid_t envid, unsigned pn)
 	return 0;
 }
 
-//Añado dup_or_share
+
 
 static void
-dup_or_share(envid_t dstenv, void *va, int perm) {
+dup_or_share(envid_t dstenv, void *va, int perm)
+{
 
 
+	int r;
+	// Pagina solo ESCRITURA se crea se crea copia (DUPPAGE EN dumbfork)
+	if ((perm & PTE_W) == PTE_W) {
+
+	if ((r = sys_page_alloc(dstenv, va, PTE_P|PTE_U|PTE_W)) < 0)
+		panic("sys_page_alloc: %e", r);
+	if ((r = sys_page_map(dstenv, va, 0, UTEMP, PTE_P|PTE_U|PTE_W)) < 0)
+		panic("sys_page_map: %e", r);
+	memmove(UTEMP, va, PGSIZE);
+	if ((r = sys_page_unmap(0, UTEMP)) < 0)
+		panic("sys_page_unmap: %e", r);
+
+	// LECTURA  =>  page_map
+	} else if ((perm & PTE_W) != PTE_W) {
+		if ((r = sys_page_map(0, va, dstenv, va, perm)) < 0)
+			panic("sys_page_map: %e", r);
+	}
 }
-
 envid_t
 fork_v0()
 {
@@ -88,6 +105,7 @@ fork_v0()
 	
 	// si dire mapeada => dup_or_share
 	for (addr = 0; (int) addr < UTOP; addr += PGSIZE) {
+		// TODO
 
 	}
 
@@ -98,6 +116,9 @@ fork_v0()
 	}
 	return envid;
 }
+
+
+
 
 
 //

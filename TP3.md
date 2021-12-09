@@ -101,3 +101,17 @@ void duppage(envid_t dstenv, void *addr, bool readonly) {
 }
 
 ```
+
+</br>
+
+# Tarea multicore_init
+
+</br>
+
+1. copia el codigo en mpentry.S. La direccion de destino es code, que es el resultado de `KADDR(MPENTRY_PADDR)` que es lo mismo que `KADDR(0x7000)` o `0x7000 + KERNBASE` que resulta en la irección virtual `0xf0007000`. 0x7000 era física (KADDR toma una fisica).
+
+2. Se usa para indicarle a mpentry.S qué stack debe usar (cada CPU tendrá uno). En boot_aps cada CPU/core tendrá un stack pointer distinto, mientras que en bootstack todos tendrian el mismo
+
+3. En el registro eip estará el puntero al tope de la pila 0x7000.
+
+
