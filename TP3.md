@@ -162,7 +162,9 @@ if (r < 0)
 
 </br>
 
-Para hacer bloqueante la llamada se podria usar un mecanismo similar al utilizado en recv cuando se envia se coloca al env como NOT_RUNNABLE, y en una lista se pone a los envs esperando enviarse. Y después al hacer un recvs se chequea la lista para ver si hay algun envs esperanso ser enviado.
+Para hacer bloqueante la llamada se podria usar un mecanismo similar al utilizado en recv cuando se envia se coloca al env como NOT_RUNNABLE, y en una lista se pone a los envs esperando enviarse. Y después al hacer un recvs se chequea la lista para ver si hay algun envs esperanso ser enviado. Para esto se va a poder hacer uso del flag env_ipc_recving.
+El orden en que despertaría dependería tanto del orden en que el proceso se destrabe como en qué momento se recorra la lista para hacer los chequeos. El proceso que hace la llamada a recv también va a tener que poder hacer que el otro proceso retome el ENV_RUNNABLE.
+El deadlock podría ocurrir si por alguna razón el proceso no hace recv sobre el proceso que envía el mensaje. 
 
 Otra implementación un poco más simple seria utilizar un variable que me indique el estado del proceso B, si esta recibiendo o no. 
 
