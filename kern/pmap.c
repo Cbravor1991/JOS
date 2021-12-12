@@ -312,13 +312,16 @@ mem_init_mp(void)
 	//     Permissions: kernel RW, user NONE
 	//
 	// LAB 4: Your code here:
-	for (int i = 0; i < NCPU; i++) {
-		uintptr_t kstacktop_i = KSTACKTOP - i * (KSTKSIZE + KSTKGAP);
-		boot_map_region(kern_pgdir,
-		                kstacktop_i - KSTKSIZE,
-		                KSTKSIZE,
-		                PADDR(percpu_kstacks[i]),
-		                PTE_W);
+	uintptr_t kstacktop_i;
+	for (size_t i = 0 ; i < NCPU ; i++) {
+		kstacktop_i = KSTACKTOP - i * (KSTKSIZE + KSTKGAP);
+		boot_map_region(
+			kern_pgdir, 
+			kstacktop_i - KSTKSIZE, 
+			KSTKSIZE, 
+			PADDR(percpu_kstacks[i]), // Usamos la PA indicada
+			PTE_W | PTE_P
+		);
 	}
 }
 
@@ -701,7 +704,7 @@ mmio_map_region(physaddr_t pa, size_t size)
 	// Hint: The staff solution uses boot_map_region.
 	//
 	// Your code here:
-	assert(pa % PGSIZE == 0);
+	
 	size = ROUNDUP(size, PGSIZE);
 	if (base + size > MMIOLIM) {
 		panic("Allocation exceeds MMIOLIM: %x", base + size);

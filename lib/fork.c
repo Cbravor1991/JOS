@@ -103,6 +103,15 @@ fork_v0()
 	// si dire mapeada => dup_or_share
 	for (addr = 0; (int) addr < UTOP; addr += PGSIZE) {
 		// TODO
+		if ((PGOFF(uvpd[PDX(addr)]) & PTE_P) != PTE_P) {
+			continue;
+		}
+
+		int perm = PGOFF(uvpt[PGNUM(addr)]);
+
+		if ((perm & PTE_P) == PTE_P) {
+			dup_or_share(envid, addr, perm & PTE_SYSCALL);
+		}
 	}
 
 	// marco hijo
