@@ -157,7 +157,7 @@ static int
 sys_env_set_pgfault_upcall(envid_t envid, void *func)
 {
 	// LAB 4: Your code here.
-	struct Env * env;
+	struct Env *env;
 	if (envid2env(envid, &env, true) < 0) {
 		return -E_BAD_ENV;
 	}
@@ -165,7 +165,8 @@ sys_env_set_pgfault_upcall(envid_t envid, void *func)
 	// Seteamos el handler del usuario para un pgfault del proceso envid
 	env->env_pgfault_upcall = func;
 
-	return 0;}
+	return 0;
+}
 
 // Allocate a page of memory and map it at 'va' with permission
 // 'perm' in the address space of 'envid'.
@@ -402,61 +403,57 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 {
 	// LAB 4: Your code here.
 	struct Env *env;
-	
+
 	if (envid2env(envid, &env, 0)) {
-		
 		return -E_BAD_ENV;
 	}
-	
+
 	if (!env->env_ipc_recving) {
 		return -E_IPC_NOT_RECV;
 	}
 
-	
+
 	uintptr_t va_ds = (uintptr_t) env->env_ipc_dstva;
 	uintptr_t va_src = (uintptr_t) srcva;
 	if (va_ds < UTOP && va_src < UTOP) {
-	
 		if (va_src % PGSIZE != 0)
 			return -E_INVAL;
 
 
 		if ((perm & (~PTE_SYSCALL)) != 0 || (perm & (PTE_U | PTE_P)) == 0) {
-			
 			return -E_INVAL;
 		}
 
-	
+
 		pte_t *pte;
 		struct PageInfo *pp = page_lookup(curenv->env_pgdir, srcva, &pte);
 		if (!pp) {
 			return -E_INVAL;
 		}
 
-		
+
 		if (!(*pte & PTE_W) && (perm & PTE_W)) {
 			return -E_INVAL;
 		}
 
-		
+
 		int error =
 		        page_insert(env->env_pgdir, pp, env->env_ipc_dstva, perm);
 		if (error < 0) {
 			return -E_NO_MEM;
 		}
 
-		
+
 		env->env_ipc_perm = perm;
 	} else {
-		
 		env->env_ipc_perm = 0;
 	}
 
-	
+
 	env->env_ipc_recving = false;
 	env->env_ipc_from = curenv->env_id;
 	env->env_ipc_value = value;
-	
+
 	env->env_status = ENV_RUNNABLE;
 	return 0;
 }
@@ -477,7 +474,7 @@ sys_ipc_recv(void *dstva)
 {
 	// LAB 4: Your code here.
 	if ((int) dstva < UTOP && (int) dstva % PGSIZE != 0) {
-		return  -E_INVAL;
+		return -E_INVAL;
 	}
 
 	curenv->env_status = ENV_NOT_RUNNABLE;
@@ -529,7 +526,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		        (envid_t) a1, (uint32_t) a2, (void *) a3, (unsigned) a4);
 	case SYS_ipc_recv:
 		return (int32_t) sys_ipc_recv((void *) a1);
-	
+
 	default:
 		return -E_INVAL;
 	}
