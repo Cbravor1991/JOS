@@ -11,6 +11,11 @@
 // Custom page fault handler - if faulting page is copy-on-write,
 // map in our own private writable copy.
 //
+
+// El error ocurrió por una lectura si el bit FEC_WR 
+// está a 0 en utf->utf_err; la dirección está mapeada si y solo sí el bit FEC_PR está a 1.
+// Para verificar PTE_COW se debe usar uvpt.
+
 static void
 pgfault(struct UTrapframe *utf)
 {
@@ -34,7 +39,37 @@ pgfault(struct UTrapframe *utf)
 
 	// LAB 4: Your code here.
 
-	panic("pgfault not implemented");
+	//panic("pgfault not implemented");
+
+	pte_t pte = uvpt[addr];
+	if ((FEC_WR & err) == 0) {
+		panic("Error por una lectura")
+	}
+	if ((FEC_PR & err) == 0) {
+		panic("error FEC_PR");
+	}
+	//PTE_COW, con valor 0x800, toma uno de estos bits como mecanismo de discriminación
+	//entre errores por acceso incorrecto a memoria, y errores relacionados con copy-on-write.
+	if ((PTE_COW & pte) == 0) {
+		panic("error en pgfault")
+	}
+	// PFTEMP: Used for temporary page mappings for the user page-fault handler
+	// (should not conflict with other temporary page mappings)
+	envid_t envid = sys_getenvid();
+	if ((r = sys_page_alloc(envid, PFTEMP, PTE_P | PTE_U | PTE_W)) < 0)
+		panic("sys_page_alloc: %e", r);
+	memmove(PFTEMP, ROUNDDOWN(addr, PGSIZE), PGSIZE);
+	if ((r = sys_page_map(envid, PFTEMP, 0, UTEMP, PTE_P | PTE_U | PTE_W)) <
+		0)
+		panic("sys_page_map: %e", r);
+	if ((r = sys_page_unmap(0, PFTEMP)) < 0)
+		panic("sys_page_unmap: %e", r);
+
+
+
+
+
+
 }
 
 //
@@ -64,6 +99,8 @@ dup_or_share(envid_t dstenv, void *va, int perm)
 {
 	int r;
 	// Pagina solo ESCRITURA se crea se crea copia (DUPPAGE EN dumbfork)
+	// pero hago el chequeo antes de llamar a dup_or_share para
+	// que sea más eficiente
 	if ((perm & PTE_W) == PTE_W) {
 		if ((r = sys_page_alloc(dstenv, va, PTE_P | PTE_U | PTE_W)) < 0)
 			panic("sys_page_alloc: %e", r);
@@ -101,19 +138,21 @@ fork_v0()
 	// Eagerly copy our entire address space into the child.
 
 	// si dire mapeada => dup_or_share
+	// sólo se han de copiar el page directory y las page tables en uso.
 	for (addr = 0; (int) addr < UTOP; addr += PGSIZE) {
-		// TODO
 
-		pde_t pde = uvpd[PDX(addr)];  // page dir
+		pde_t pde = uvpd[PDX(addr)]; //page dir
 		int perm = PGOFF(pde);
 		if (perm & PTE_P) {
-			pte_t pte = uvpt[PGNUM(addr)];  // page table entry
-			perm = PGOFF(pte);
+		pte_t pte = uvpt[PGNUM(addr)]; //page table entry
+		perm = PGOFF(pte);
 			if (perm & PTE_P) {
-				perm = PTE_SYSCALL & pte;
-				dup_or_share(envid, addr, perm);
+				perm =  PTE_SYSCALL & pte;
+				dup_or_share(envid, PGNUM(addr));
 			}
 		}
+	
+		
 	}
 
 	// marco hijo
@@ -145,8 +184,61 @@ envid_t
 fork(void)
 {
 	// LAB 4: Your code here.
-	return fork_v0();
+	//return fork_v0();
 	// panic("fork not implemented");
+	envid_t envid;
+	uint8_t *addr;
+	int r;
+	// instalo la funcion en padre
+	set_pgfault_handler(pgfault);
+	envid = sys_exofork();
+	if (envid < 0)
+		panic("sys_exofork: %e", envid);
+	if (envid == 0) {
+		// We're the child.
+		// The copied value of the global variable 'thisenv'
+		// is no longer valid (it refers to the parent!).
+		// Fix it and return 0.
+		thisenv = &envs[ENVX(sys_getenvid())];
+		return 0;
+	}
+	
+	// We're the parent.
+	// Eagerly copy our entire address space into the child.
+
+	// si dire mapeada => dup_or_share
+	// sólo se han de copiar el page directory y las page tables en uso.
+	for (addr = 0; (int) addr < UTOP; addr += PGSIZE) {
+
+		pde_t pde = uvpd[PDX(addr)]; //page dir
+		int perm = PGOFF(pde);
+		if (perm & PTE_P) {
+		pte_t pte = uvpt[PGNUM(addr)]; //page table entry
+		perm = PGOFF(pte);
+			if (perm & PTE_P) {
+				perm =  PTE_SYSCALL & pte;
+				duppage(envid, addr, perm);
+			}
+		}
+	
+		
+	}
+
+
+	
+	// seteo en hijo
+	int error = sys_env_set_pgfault_upcall(envid, thisenv->env_pgfault_upcall);
+	if (error < 0) {
+		panic("Couldnt set pgfault");
+	}
+	
+	// marco hijo
+
+	error = sys_env_set_status(envid, ENV_RUNNABLE);
+	if (error < 0) {
+		panic("Couldnt set env status");
+	}
+	return envid;
 }
 
 // Challenge!
