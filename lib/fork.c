@@ -103,15 +103,19 @@ fork_v0()
 	// si dire mapeada => dup_or_share
 	for (addr = 0; (int) addr < UTOP; addr += PGSIZE) {
 		// TODO
-		if ((PGOFF(uvpd[PDX(addr)]) & PTE_P) != PTE_P) {
-			continue;
-		}
 
-		int perm = PGOFF(uvpt[PGNUM(addr)]);
-
-		if ((perm & PTE_P) == PTE_P) {
-			dup_or_share(envid, addr, perm & PTE_SYSCALL);
+		pde_t pde = uvpd[PDX(addr)]; //page dir
+		int perm = PGOFF(pde);
+		if (perm & PTE_P) {
+		pte_t pte = uvpt[PGNUM(addr)]; //page table entry
+		perm = PGOFF(pte);
+			if (perm & PTE_P) {
+				perm =  PTE_SYSCALL & pte;
+				dup_or_share(envid, addr, perm);
+			}
 		}
+	
+		
 	}
 
 	// marco hijo
