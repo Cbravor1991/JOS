@@ -41,9 +41,9 @@ pgfault(struct UTrapframe *utf)
 
 	// panic("pgfault not implemented");
 
-	pte_t pte = uvpt[addr];
+	pte_t pte = uvpt[(uintptr_t)addr >> PGSHIFT];
 	if ((FEC_WR & err) == 0) {
-		panic("Error por una lectura")
+		panic("Error por una lectura");
 	}
 	if ((FEC_PR & err) == 0) {
 		panic("error FEC_PR");
@@ -52,15 +52,16 @@ pgfault(struct UTrapframe *utf)
 	// discriminación entre errores por acceso incorrecto a memoria, y
 	// errores relacionados con copy-on-write.
 	if ((PTE_COW & pte) == 0) {
-		panic("error en pgfault")
+		panic("error en pgfault");
 	}
 	// PFTEMP: Used for temporary page mappings for the user page-fault
 	// handler (should not conflict with other temporary page mappings)
 	envid_t envid = sys_getenvid();
 	if ((r = sys_page_alloc(envid, PFTEMP, PTE_P | PTE_U | PTE_W)) < 0)
 		panic("sys_page_alloc: %e", r);
-	memmove(PFTEMP, ROUNDDOWN(addr, PGSIZE), PGSIZE);
-	if ((r = sys_page_map(envid, PFTEMP, 0, UTEMP, PTE_P | PTE_U | PTE_W)) < 0)
+		void* rounded_addr = ROUNDDOWN(addr, PGSIZE);
+	memmove(PFTEMP, rounded_addr, PGSIZE);
+	if ((r = sys_page_map(envid, PFTEMP, envid, rounded_addr, PTE_P | PTE_U | PTE_W)) < 0)
 		panic("sys_page_map: %e", r);
 	if ((r = sys_page_unmap(0, PFTEMP)) < 0)
 		panic("sys_page_unmap: %e", r);
@@ -83,7 +84,41 @@ duppage(envid_t envid, unsigned pn)
 	int r;
 
 	// LAB 4: Your code here.
-	panic("duppage not implemented");
+	//panic("duppage not implemented");
+
+	pte_t pte = uvpt[pn];
+	void* va = (void*) (pn*PGSIZE);
+	envid_t envid_get = sys_getenvid();
+	// permisos original
+	bool PTE_W_removed = false;
+	bool PTE_COW_in_child = false;
+	int perm = pte & (PTE_COW | PTE_SYSCALL);
+	int child_perm = perm;
+	if((perm & PTE_W) != 0){
+		child_perm = child_perm & ~PTE_W;
+		PTE_W_removed = true;
+
+	}
+	if (PTE_W_removed) {
+		child_perm = child_perm | PTE_COW;
+		PTE_COW_in_child = true;
+	}
+	if (PTE_COW_in_child) {
+			if ((r = sys_page_map(envid_get, va, envid, va, child_perm)) <
+		0)
+		panic("sys_page_map: %e", r);
+	} else {
+		if ((r = sys_page_map(envid_get, va, envid, va, perm)) <
+			0)
+			panic("sys_page_map: %e", r);
+	}
+
+	if ((r = sys_page_map(envid_get, va, envid_get, va, child_perm)) <
+		0)
+		panic("sys_page_map: %e", r);
+
+
+
 	return 0;
 }
 
@@ -135,13 +170,13 @@ fork_v0()
 	// sólo se han de copiar el page directory y las page tables en uso.
 	for (addr = 0; (int) addr < UTOP; addr += PGSIZE) {
 		pde_t pde = uvpd[PDX(addr)];  // page dir
-		int perm = PGOFF(pde);
+		int perm = PGOFF(pde); // Da lo mismo sin el PGOFF...
 		if (perm & PTE_P) {
 			pte_t pte = uvpt[PGNUM(addr)];  // page table entry
-			perm = PGOFF(pte);
+			perm = PGOFF(pte); // Da lo mismo sin el PGOFF...
 			if (perm & PTE_P) {
 				perm = PTE_SYSCALL & pte;
-				dup_or_share(envid, PGNUM(addr));
+				dup_or_share(envid, addr, perm);
 			}
 		}
 	}
@@ -180,8 +215,12 @@ fork(void)
 	envid_t envid;
 	uint8_t *addr;
 	int r;
-	// instalo la funcion en padre
+	int error;
+	//Instalar, en el padre, la función pgfault como manejador de page faults. Esto también reservará memoria para su pila de excepciones.
 	set_pgfault_handler(pgfault);
+	// Llamar a sys_exofork() y manejar el resultado. En el hijo, actualizar como de costumbre la variable global thisenv.
+
+
 	envid = sys_exofork();
 	if (envid < 0)
 		panic("sys_exofork: %e", envid);
@@ -194,28 +233,43 @@ fork(void)
 		return 0;
 	}
 
+
 	// We're the parent.
 	// Eagerly copy our entire address space into the child.
 
 	// si dire mapeada => dup_or_share
 	// sólo se han de copiar el page directory y las page tables en uso.
-	for (addr = 0; (int) addr < UTOP; addr += PGSIZE) {
-		pde_t pde = uvpd[PDX(addr)];  // page dir
-		int perm = PGOFF(pde);
-		if (perm & PTE_P) {
-			pte_t pte = uvpt[PGNUM(addr)];  // page table entry
-			perm = PGOFF(pte);
-			if (perm & PTE_P) {
-				perm = PTE_SYSCALL & pte;
-				duppage(envid, addr, perm);
+	// Top of one-page user exception stack UXSTACKTOP
+	//Iterar sobre el espacio de memoria del padre (desde 0 hasta UTOP) y, para cada página presente, invocar a la función duppage() para mapearla en el hijo. Observaciones:
+	for (addr = 0;  addr < (uint8_t*) UTOP; addr += PGSIZE) {
+		// no se debe mapear la región correspondiente a la pila de excepciones
+
+		/* UTOP,UENVS ------>  +------------------------------+ 0xeec00000
+		* UXSTACKTOP -/       |     User Exception Stack     | RW/RW  PGSIZE
+		*                     +------------------------------+ 0xeebff000
+		*                     |       Empty Memory (*)       | --/--  PGSIZE
+		*/
+		if (addr < (uint8_t*)(UXSTACKTOP - PGSIZE)) {
+			pde_t pde = uvpd[PDX(addr)];  // page dir
+			int perm = PGOFF(pde);
+			if (perm & PTE_P) {// no verificar ningún PTE cuyo PDE ya indicó que no hay page table presente 
+				pte_t pte = uvpt[PGNUM(addr)];  // page table entry
+				perm = PGOFF(pte);
+				if (perm & PTE_P) {
+					perm = PTE_SYSCALL & pte;
+					duppage(envid, PGNUM(addr));
+				}
 			}
 		}
 	}
-
+	// Reservar memoria para la pila de excepciones del hijo, e instalar su manejador de excepciones.
+	error = sys_page_alloc(envid, (void*)(UXSTACKTOP - PGSIZE), PTE_SYSCALL);
+	if(error < 0){
+		panic("Couldn alloc in fork");
+	}
 
 	// seteo en hijo
-	int error =
-	        sys_env_set_pgfault_upcall(envid, thisenv->env_pgfault_upcall);
+	error = sys_env_set_pgfault_upcall(envid, thisenv->env_pgfault_upcall);
 	if (error < 0) {
 		panic("Couldnt set pgfault");
 	}
