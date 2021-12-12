@@ -162,8 +162,8 @@ if (r < 0)
 
 </br>
 
-Para hacer bloqueante la llamada se podria usar un mecanismo similar al utilizado en recv cuando se envia se coloca al env como NOT_RUNNABLE, y en una lista se pone a los envs esperando enviarse. Y después al hacer un recvs se cheque la lista para ver si hay algun envs esperanso ser enviado.
+Para hacer bloqueante la llamada se podria usar un mecanismo similar al utilizado en recv cuando se envia se coloca al env como NOT_RUNNABLE, y en una lista se pone a los envs esperando enviarse. Y después al hacer un recvs se chequea la lista para ver si hay algun envs esperanso ser enviado.
 
-Otra implementación un poco más simple seria utilizar un variable que me indiqu el estado del proceso B, si esta recibiendo o no. 
+Otra implementación un poco más simple seria utilizar un variable que me indique el estado del proceso B, si esta recibiendo o no. 
 
 
