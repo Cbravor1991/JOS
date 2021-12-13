@@ -12,9 +12,9 @@ Preguntas:
 
 Respuestas:
 
-1. En la función libmain() se llama a la función umain(), una vez que umain() finaliza se vuelve nuevamente a libmain(), esta sera la que llame al exit(), que hace uso de sys_env_destroy(), que finaliza invocando a env_destroy() que a su vez llama a env_free, la cual imprime que se esta liberando el envioment y libera los recursos del mismo y luego se invoca a shed_yield, quien llama a sched_alt, que procede a buscar otros environments y al no encontrar otro environments finalmente llama al monitor del kernel.
+1. En la función libmain() se llama a la función umain(), una vez que umain() finaliza se vuelve nuevamente a libmain(), esta sera la que llame al exit(), que hace uso de sys_env_destroy(), que finaliza invocando a env_destroy() que a su vez llama a env_free, la cual imprime que se esta liberando el environment y libera los recursos del mismo y luego se invoca a shed_yield, quien llama a sched_alt, que procede a buscar otros environments y al no encontrar otro environments finalmente llama al monitor del kernel.
 
-2. En el TP anterior la función env_destroy liberaba el unico proceso. En cambio en este TP sera necesario realizar una serie de validaciones ya que un mismo proceso va a poder estar corriendo en otra CPU y si no es el proceso actual de la CPU que estoy utilizando. Entonces estado del proceso cambiara a ENV_DYING, el proceso pasa a ser "ZOMBIE" y pasa a ser liberado cuando se le ceda el control.
+2. En el TP anterior la función env_destroy liberaba el unico proceso. En cambio en este TP sera necesario realizar una serie de validaciones ya que un mismo proceso va a poder estar corriendo en otra CPU y puede ser el proceso actual de la CPU que estoy utilizando. Entonces el estado del proceso cambiara a ENV_DYING, el proceso pasa a ser "ZOMBIE" y pasa a ser liberado cuando se le ceda el control.
 Si no sucede lo descripto anteriormente se lo libera pero sera necesario antes chequear a traves de otra validación si este no estaba corriendo en ese momento, si sucede esto sera necesario actualizar el curenv y a través de sched_yield cambiar a otro proceso.
 
 

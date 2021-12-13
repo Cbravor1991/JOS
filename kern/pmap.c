@@ -318,7 +318,7 @@ mem_init_mp(void)
 		boot_map_region(kern_pgdir,
 		                kstacktop_i - KSTKSIZE,
 		                KSTKSIZE,
-		                PADDR(percpu_kstacks[i]),  // Usamos la PA indicada
+		                PADDR(percpu_kstacks[i]),
 		                PTE_W | PTE_P);
 	}
 }

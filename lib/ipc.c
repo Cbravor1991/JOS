@@ -73,7 +73,7 @@ ipc_send(envid_t to_env, uint32_t val, void *pg, int perm)
 	}
 
 	if (ret < 0) {
-		panic("fail sys_ipc_try_send %d \n", ret);
+		panic("ipc_sen failed!: %d \n", ret);
 	}
 }
 

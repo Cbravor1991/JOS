@@ -31,12 +31,12 @@ set_pgfault_handler(void (*handler)(struct UTrapframe *utf))
 		// LAB 4: Your code here.
 		r = sys_page_alloc(thisenv->env_id, (void *)UXSTACKTOP - PGSIZE, PTE_P | PTE_W | PTE_U);
 		if(r < 0){
-			panic("set_pgfault_handler failed %d", r);
+			panic("set_pgfault_handler failed, status sys_page_alloc: %d", r);
 		}
 
 	r = sys_env_set_pgfault_upcall(thisenv->env_id,_pgfault_upcall);
 		if(r < 0){
-			panic("set_pgfault_handler failed %d", r);
+			panic("set_pgfault_handler failed, status sys_page_alloc: %d", r);
 		}
 	}
 

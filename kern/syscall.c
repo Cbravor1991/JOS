@@ -162,7 +162,6 @@ sys_env_set_pgfault_upcall(envid_t envid, void *func)
 		return -E_BAD_ENV;
 	}
 
-	// Seteamos el handler del usuario para un pgfault del proceso envid
 	env->env_pgfault_upcall = func;
 
 	return 0;
@@ -453,7 +452,6 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 	env->env_ipc_recving = false;
 	env->env_ipc_from = curenv->env_id;
 	env->env_ipc_value = value;
-
 	env->env_status = ENV_RUNNABLE;
 	return 0;
 }
@@ -480,7 +478,6 @@ sys_ipc_recv(void *dstva)
 	curenv->env_status = ENV_NOT_RUNNABLE;
 	curenv->env_ipc_recving = 1;
 	curenv->env_ipc_dstva = dstva;
-
 	curenv->env_tf.tf_regs.reg_eax = 0;
 
 	return 0;
