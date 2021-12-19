@@ -24,7 +24,7 @@ i386_init(void)
 
 	// Before doing anything else, complete the ELF loading process.
 	// Clear the uninitialized global data (BSS) section of our program.
-	// This ensures that all static/global variables start out zero.
+	// This ensures that all static/global variables start out zero. inicio
 	memset(__bss_start, 0, end - __bss_start);
 
 	// Initialize the console.
