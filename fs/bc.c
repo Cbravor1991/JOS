@@ -58,7 +58,9 @@ bc_pgfault(struct UTrapframe *utf)
 		panic("sys_page_alloc: %e", r);
 	
 	//int ide_read(uint32_t secno, void *dst, size_t nsecs)
-	if ((r = ide_read()) <
+	int blk_to_read = BLKSECTS * blockno;
+	// blk to read, addr to read into, ¿size nsec? listo
+	if ((r = ide_read(blk_to_read, addr, BLKSECTS)) <
 	    0)
 		panic("ide_read: %e", r);
 	// Clear the dirty bit for the disk block page since we just read the
