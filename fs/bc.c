@@ -98,7 +98,8 @@ flush_block(void *addr)
 	int r;
 	addr = ROUNDDOWN(addr, PGSIZE);
 	// If the block is not in the block cache or is not dirty, does
-	// nothing.
+	// nothing. 
+	// hago si pasa lo contrario, más facil...
 	if(va_is_mapped(addr) || va_is_dirty(addr)) {
 		// int	ide_write(uint32_t secno, const void *src, size_t nsecs);
 		int blk_to_flush = BLKSECTS * blockno;
