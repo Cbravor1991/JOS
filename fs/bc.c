@@ -51,6 +51,16 @@ bc_pgfault(struct UTrapframe *utf)
 	//
 	// LAB 5: you code here:
 
+	envid_t envid = sys_getenvid();
+	addr = ROUNDUP(addr, PGSIZE);
+	if ((r = sys_page_alloc(envid, addr, PTE_SYSCALL)) <
+	    0)
+		panic("sys_page_alloc: %e", r);
+	
+	//int ide_read(uint32_t secno, void *dst, size_t nsecs)
+	if ((r = ide_read()) <
+	    0)
+		panic("ide_read: %e", r);
 	// Clear the dirty bit for the disk block page since we just read the
 	// block from disk
 	if ((r = sys_page_map(0, addr, 0, addr, uvpt[PGNUM(addr)] & PTE_SYSCALL)) <
