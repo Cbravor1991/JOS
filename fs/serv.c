@@ -214,7 +214,7 @@ serve_read(envid_t envid, union Fsipc *ipc)
 {
 	struct Fsreq_read *req = &ipc->read;
 	struct Fsret_read *ret = &ipc->readRet;
-	
+
 
 	if (debug)
 		cprintf("serve_read %08x %08x %08x\n",
@@ -225,10 +225,10 @@ serve_read(envid_t envid, union Fsipc *ipc)
 	// Lab 5: Your code here:
 	/*
 	struct OpenFile {
-		uint32_t o_fileid;    // file id
-		struct File *o_file;  // mapped descriptor for open file
-		int o_mode;           // open mode
-		struct Fd *o_fd;      // Fd page ->offset
+	        uint32_t o_fileid;    // file id
+	        struct File *o_file;  // mapped descriptor for open file
+	        int o_mode;           // open mode
+	        struct Fd *o_fd;      // Fd page ->offset
 	};
 	*/
 
@@ -236,17 +236,18 @@ serve_read(envid_t envid, union Fsipc *ipc)
 	int r;
 	// me pone el openfile en *o
 	if ((r = openfile_lookup(envid, req->req_fileid, &o)) < 0)
-	return r;
+		return r;
 
 	// devuelve los bytes leidos
-	if ((r = file_read(o->o_file, ret->ret_buf, req->req_n, o->o_fd->fd_offset)) < 0)
-	return r;
+	if ((r = file_read(o->o_file, ret->ret_buf, req->req_n, o->o_fd->fd_offset)) <
+	    0)
+		return r;
 
 
-	//update seek position
+	// update seek position
 	o->o_fd->fd_offset += r;
 
-	
+
 	// devuelvo bytes leidos
 	return r;
 }
@@ -266,23 +267,24 @@ serve_write(envid_t envid, struct Fsreq_write *req)
 		        req->req_n);
 
 	// LAB 5: Your code here.
-	//panic("serve_write not implemented");
+	// panic("serve_write not implemented");
 
 	struct OpenFile *o;
 	int r;
 	// me pone el openfile en *o
 	if ((r = openfile_lookup(envid, req->req_fileid, &o)) < 0)
-	return r;
+		return r;
 
 	// devuelve los bytes escritos
-	if ((r = file_write(o->o_file, req->req_buf, req->req_n, o->o_fd->fd_offset)) < 0)
-	return r;
+	if ((r = file_write(
+	             o->o_file, req->req_buf, req->req_n, o->o_fd->fd_offset)) < 0)
+		return r;
 
 
-	//update seek position
+	// update seek position
 	o->o_fd->fd_offset += r;
 
-	
+
 	// devuelvo bytes leidos
 	return r;
 }
