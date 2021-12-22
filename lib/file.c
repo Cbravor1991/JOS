@@ -144,29 +144,29 @@ devfile_write(struct Fd *fd, const void *buf, size_t n)
 	// panic("devfile_write not implemented");
 	/*
 	struct Fsreq_write {
-		int req_fileid;
-		size_t req_n;
-		char req_buf[PGSIZE - (sizeof(int) + sizeof(size_t))];
+	        int req_fileid;
+	        size_t req_n;
+	        char req_buf[PGSIZE - (sizeof(int) + sizeof(size_t))];
 	} write;
 	*/
 	int r;
 	int file_id = fd->fd_file.id;
-	struct Fsreq_write* fsipcbuf_write = &fsipcbuf.write;
+	struct Fsreq_write *fsipcbuf_write = &fsipcbuf.write;
 
 	// tamaño del buf. Esto por consigna, puedo escribir menos
 	int final_size = sizeof(fsipcbuf_write->req_buf);
-	if(n < final_size) {
+	if (n < final_size) {
 		final_size = n;
 	}
 	fsipcbuf_write->req_n = final_size;
 
 	// asigno el id
-	fsipcbuf_write->req_fileid =  file_id;
+	fsipcbuf_write->req_fileid = file_id;
 
-	//el buff. Pongo lo de buf en req buf
+	// el buff. Pongo lo de buf en req buf
 	memmove(fsipcbuf_write->req_buf, buf, final_size);
 	r = fsipc(FSREQ_WRITE, NULL);
-	
+
 
 	return r;
 }
