@@ -153,20 +153,20 @@ devfile_write(struct Fd *fd, const void *buf, size_t n)
 	int file_id = fd->fd_file.id;
 	struct Fsreq_write* fsipcbuf_write = &fsipcbuf.write;
 
-	// tamaño del buf
-	int final_size = n;
-	if(n < sizeof(fsipcbuf_write->req_buf)) {
-		final_size = sizeof(fsipcbuf_write->req_buf);
+	// tamaño del buf. Esto por consigna, puedo escribir menos
+	int final_size = sizeof(fsipcbuf_write->req_buf);
+	if(n < final_size) {
+		final_size = n;
 	}
 	fsipcbuf_write->req_n = final_size;
 
-	// el id
+	// asigno el id
 	fsipcbuf_write->req_fileid =  file_id;
 
-	//el buff
+	//el buff. Pongo lo de buf en req buf
 	memmove(fsipcbuf_write->req_buf, buf, final_size);
-	if ((r = (fsipc(FSREQ_WRITE, NULL)) < 0))
-	return r;
+	r = fsipc(FSREQ_WRITE, NULL);
+	
 
 	return r;
 }
