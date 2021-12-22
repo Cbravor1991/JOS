@@ -276,8 +276,7 @@ serve_write(envid_t envid, struct Fsreq_write *req)
 		return r;
 
 	// devuelve los bytes escritos
-	if ((r = file_write(
-	             o->o_file, req->req_buf, req->req_n, o->o_fd->fd_offset)) < 0)
+	if ((r = file_write(o->o_file, req->req_buf, req->req_n, o->o_fd->fd_offset)) < 0)
 		return r;
 
 
