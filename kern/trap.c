@@ -129,7 +129,6 @@ trap_init(void)
 	// SYSCALL interrupt
 	SETGATE(idt[T_SYSCALL], 0, GD_KT, trap_48, 3);
 
-
 	SETGATE(idt[IRQ_OFFSET + IRQ_TIMER], false, GD_KT, irq_timer, 0);
 
 	// Per-CPU setup
