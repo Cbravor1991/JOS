@@ -94,8 +94,9 @@ duppage(envid_t envid, unsigned pn)
 	bool PTE_W_removed = false;
 	bool PTE_COW_in_child = false;
 	int perm = pte & (PTE_COW | PTE_SYSCALL);
+	bool PTE_SHARE_not_present = (perm & (PTE_SHARE)) == 0;
 	int child_perm = perm;
-	if ((perm & PTE_W) != 0) {
+	if (((perm & PTE_W) != 0) & PTE_SHARE_not_present) {
 		child_perm = child_perm & ~PTE_W;
 		PTE_W_removed = true;
 	}
