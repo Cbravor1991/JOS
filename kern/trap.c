@@ -83,7 +83,8 @@ void trap_18();
 void trap_19();
 void trap_48();
 
-
+void irq_kdb();
+void irq_serial();
 void irq_timer();
 
 void
@@ -130,6 +131,11 @@ trap_init(void)
 	SETGATE(idt[T_SYSCALL], 0, GD_KT, trap_48, 3);
 
 	SETGATE(idt[IRQ_OFFSET + IRQ_TIMER], false, GD_KT, irq_timer, 0);
+
+	// interrupcion de teclado
+	SETGATE(idt[IRQ_OFFSET + IRQ_KBD], 0, GD_KT, irq_kdb, 0);
+	// interrupcion serial port
+	SETGATE(idt[IRQ_OFFSET + IRQ_SERIAL], 0, GD_KT, irq_serial, 0);
 
 	// Per-CPU setup
 	trap_init_percpu();
@@ -239,6 +245,15 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
+
+	if (tf->tf_trapno ==  IRQ_OFFSET + IRQ_KBD) {
+		kbd_intr();
+		return;
+	}
+	if (tf->tf_trapno ==  IRQ_OFFSET + IRQ_SERIAL) {
+		serial_intr();
+		return;
+	}
 
 	// se maneja la excepcion del tipo breakpoint
 	if (tf->tf_trapno == T_BRKPT) {
