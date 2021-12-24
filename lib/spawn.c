@@ -329,7 +329,6 @@ copy_shared_pages(envid_t child)
 		// para ahorrarme llamado a uvpt
 		bool not_pres_pd = !((uvpd[PDX(addr)] & PTE_P) == PTE_P);
 		if (not_pres_pd) {
-			
 		} else {
 			// present, share, user.
 			perm_pt = uvpt[PGNUM(addr)];
@@ -338,10 +337,15 @@ copy_shared_pages(envid_t child)
 			bool shared = (perm_pt & PTE_SHARE) == PTE_SHARE;
 			if ((pres) && (user) && (shared)) {
 				int perm = perm_pt & PTE_SYSCALL;
-				//mapeo. Puede ir getenvid o 0 (el primero es mas legible)
-				if ((r = sys_page_map(
-							sys_getenvid(), (void*)addr, child, (void*)addr, perm)) < 0)
-					panic("copy_shared_pages mapping error: %e", r);
+				// mapeo. Puede ir getenvid o 0 (el primero es mas legible)
+				if ((r = sys_page_map(sys_getenvid(),
+				                      (void *) addr,
+				                      child,
+				                      (void *) addr,
+				                      perm)) < 0)
+					panic("copy_shared_pages mapping "
+					      "error: %e",
+					      r);
 			}
 		}
 	}
