@@ -246,11 +246,11 @@ trap_dispatch(struct Trapframe *tf)
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
 
-	if (tf->tf_trapno ==  IRQ_OFFSET + IRQ_KBD) {
+	if (tf->tf_trapno == IRQ_OFFSET + IRQ_KBD) {
 		kbd_intr();
 		return;
 	}
-	if (tf->tf_trapno ==  IRQ_OFFSET + IRQ_SERIAL) {
+	if (tf->tf_trapno == IRQ_OFFSET + IRQ_SERIAL) {
 		serial_intr();
 		return;
 	}
