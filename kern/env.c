@@ -457,7 +457,7 @@ env_create(uint8_t *binary, enum EnvType type)
 	// FL_IOPL_3   IOPL == 3
 	// usuario corre en ring 3
 	if (type == ENV_TYPE_FS) {
-		e->env_tf.tf_eflags = e->env_tf.tf_eflags | FL_IOPL_3;
+		e->env_tf.tf_eflags = e->env_tf.tf_eflags | FL_IOPL_MASK;
 	}
 }
 
