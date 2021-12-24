@@ -365,8 +365,8 @@ page_init(void)
 	size_t i;
 	for (i = 0; i < npages; i++) {
 		if (i == 0) {
-			//pages[i].pp_ref = 1;
-			//pages[i].pp_link = NULL;
+			// pages[i].pp_ref = 1;
+			// pages[i].pp_link = NULL;
 			continue;
 		}
 		if (page2pa(&pages[i]) == MPENTRY_PADDR) {
