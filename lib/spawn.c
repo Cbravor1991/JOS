@@ -323,5 +323,22 @@ static int
 copy_shared_pages(envid_t child)
 {
 	// LAB 5: Your code here.
+	int perm;
+	int perm_pd;
+	int r;
+	for (uintptr_t addr = 0; addr < UTOP; addr += PGSIZE) {
+		perm = uvpt[PGNUM(addr)];
+		perm_pd = uvpd[PGNUM(addr)];
+		bool not_pres_pd = (perm_pd & PTE_U);
+		bool pres = (perm && PTE_P);
+		bool share = perm && PTE_SHARE;
+		if (pres && share && not_pres_pd) {
+			perm = perm & PTE_SYSCALL;
+			//mapeo
+			if ((r = sys_page_map(
+			             0, (void*)addr, child, (void*)addr, perm)) < 0)
+				panic("spawn: sys_page_map data: %e", r);
+		}
+	}
 	return 0;
 }
